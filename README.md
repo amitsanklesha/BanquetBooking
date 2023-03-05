@@ -1,2 +1,2 @@
 # BanquetBooking
-Simple Banquet booking for small gatherings - built in Python
+Simple Banquet booking application for small gatherings - built in Python
