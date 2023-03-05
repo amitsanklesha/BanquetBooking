@@ -299,12 +299,12 @@ def cancelFrameWorkByDate():
 
 # Define a function to update the labels
 def update_values_with_data(*args):
-    updateindex = updatePartyNameVar.index(update_optionmenu_var.get())
-    booking_amount_update_entry_var.set(updatePaymentDone[updateindex])
-    booked_date_update_entry_var.set(updateBookingDateVar[updateindex])
-    booked_period_update_entry_var.set(updateBookingPeriodVar[updateindex])
-    booking_date_update_entry_var.set(updateBkDateVar[updateindex])
-    final_price_update_entry_var.set(updateFinalPriceVar[updateindex])
+    updateindex = updatePartyNameArray.index(update_optionmenu_var.get())
+    booking_amount_entry_var.set(updatePaymentDoneArray[updateindex])
+    event_date_entry_var.set(updateEventDateArray[updateindex])
+    booked_period_entry_var.set(updateBookingPeriodArray[updateindex])
+    booking_date_entry_var.set(updateBookingDateArray[updateindex])
+    final_price_entry_var.set(updateFinalFullPriceArray[updateindex])
 
 
 def updateButtonClick():
@@ -323,24 +323,24 @@ def updateButtonClick():
 
     values = readAppointmentsAllData()
 
-    updatePartyNameVar.clear()
-    updateBookingDateVar.clear()
-    updateBookingPeriodVar.clear()
-    updatePaymentDone.clear()
-    updateBkDateVar.clear()
-    updateFinalPriceVar.clear()
+    updatePartyNameArray.clear()
+    updateEventDateArray.clear()
+    updateBookingPeriodArray.clear()
+    updatePaymentDoneArray.clear()
+    updateBookingDateArray.clear()
+    updateFinalFullPriceArray.clear()
 
     for item in values:
         if len(item) > 4:
-            updatePartyNameVar.append(item.split(',')[2])
-            updateBookingDateVar.append(item.split(',')[1])
-            updateBookingPeriodVar.append(item.split(',')[3])
-            updatePaymentDone.append(item.split(',')[5])
-            updateBkDateVar.append(item.split(',')[6])
-            updateFinalPriceVar.append(item.split(',')[4])
+            updatePartyNameArray.append(item.split(',')[2])
+            updateEventDateArray.append(item.split(',')[1])
+            updateBookingPeriodArray.append(item.split(',')[3])
+            updatePaymentDoneArray.append(item.split(',')[5])
+            updateBookingDateArray.append(item.split(',')[6])
+            updateFinalFullPriceArray.append(item.split(',')[4])
 
     # Current booking details to be displayed
-    tk.Label(updateAppointmentFrame, textvariable=booked_date_update_entry_var, font=("Courier", 12), bg='lightblue').grid(row=3, column=2)
+    tk.Label(updateAppointmentFrame, textvariable=event_date_entry_var, font=("Courier", 12), bg='lightblue').grid(row=3, column=2)
 
     # Event Date
     # Create a variable to hold the state of the checkbox
@@ -359,28 +359,28 @@ def updateButtonClick():
     # Booking Period
     updatebookingPeriodFrame = tk.Frame(updateAppointmentFrame, borderwidth=5, bg="lightblue")
     updatebookingPeriodFrame.grid(row=5, column=2)
-    updatebookingPeriodComboBox = Combobox(updateAppointmentFrame, background="lightblue", values=("Morning", "Evening", "Full Day"), textvariable=booked_period_update_entry_var)
+    updatebookingPeriodComboBox = Combobox(updateAppointmentFrame, background="lightblue", values=("Morning", "Evening", "Full Day"), textvariable=booked_period_entry_var)
     updatebookingPeriodComboBox.grid(row=5, column=2)
 
     # Option menu for Party Name
     update_optionmenu_var.set("")
-    optionmenu = tk.OptionMenu(updateAppointmentFrame, update_optionmenu_var, *updatePartyNameVar,
+    optionmenu = tk.OptionMenu(updateAppointmentFrame, update_optionmenu_var, *updatePartyNameArray,
                                command=update_values_with_data)
     optionmenu.grid(row=2, column=2, columnspan=45)
 
     # Agreed final Price
     validateUpdateInt1 = (updateAppointmentFrame.register(validate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
     agreedUpdateFinalPrice = tk.Entry(updateAppointmentFrame, borderwidth=5, background="white", width=15, validate='key',
-                                validatecommand=validateUpdateInt1, textvariable=final_price_update_entry_var)
+                                      validatecommand=validateUpdateInt1, textvariable=final_price_entry_var)
     agreedUpdateFinalPrice.grid(row=6, column=2)
 
     # Booking Amount
-    updatebookingAmount = tk.Entry(updateAppointmentFrame, borderwidth=5, background="white", width=15, textvariable=booking_amount_update_entry_var, validate='key', validatecommand=validateUpdateInt1)
+    updatebookingAmount = tk.Entry(updateAppointmentFrame, borderwidth=5, background="white", width=15, textvariable=booking_amount_entry_var, validate='key', validatecommand=validateUpdateInt1)
     updatebookingAmount.grid(row=7, column=2)
 
     update_date_var = tk.StringVar()
     update_date_var.set(date.today().strftime("%d/%m/%Y"))
-    update_date_entry_when_booked = DateEntry(updateAppointmentFrame, width=12, textvariable=booking_date_update_entry_var, date_pattern="dd/mm/yyyy")
+    update_date_entry_when_booked = DateEntry(updateAppointmentFrame, width=12, textvariable=booking_date_entry_var, date_pattern="dd/mm/yyyy")
     update_date_entry_when_booked.grid(row=8, column=2)
 
     # Update Appointment screen buttons
@@ -388,8 +388,17 @@ def updateButtonClick():
               command=lambda: updateAppointment(updatecalendarFrame, updatePickercalendar, update_optionmenu_var,
                                               updatebookingPeriodComboBox, agreedUpdateFinalPrice, updatebookingAmount,
                                               update_date_entry_when_booked, checkbox_state)).grid(row=9, column=2)
-    tk.Button(updateAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=9, column=1)
+    tk.Button(updateAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=gobackfromupdate).grid(row=9, column=1)
     # Update Appointment frame/window ends
+
+
+def gobackfromupdate():
+    booking_amount_entry_var.set("")
+    event_date_entry_var.set("")
+    booked_period_entry_var.set("")
+    booking_date_entry_var.set("")
+    final_price_entry_var.set("")
+    moveToUser()
 
 
 def updateAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox, agreedFinalPrice, bookingAmount, date_entry_when_booked, checkbox_state):
@@ -418,11 +427,11 @@ def updateAppointment(calendarViewFrame, datePickercalendar, partyName, bookingP
         f.close()
 
     messagebox.showinfo("Success!", "{} booking updated!".format(partyName.get()))
-    booking_amount_update_entry_var.set("")
-    booked_date_update_entry_var.set("")
-    booked_period_update_entry_var.set("")
-    booking_date_update_entry_var.set("")
-    final_price_update_entry_var.set("")
+    booking_amount_entry_var.set("")
+    event_date_entry_var.set("")
+    booked_period_entry_var.set("")
+    booking_date_entry_var.set("")
+    final_price_entry_var.set("")
     moveToUser()
 
 
@@ -515,28 +524,28 @@ printAppointmentFrame = tk.Frame(root)
 # Start Global Variable holders for Update operation
 update_optionmenu_var = tk.StringVar(updateAppointmentFrame)
 
-booking_amount_update_entry_var = tk.StringVar()
-booking_amount_update_entry_var.set("")
+booking_amount_entry_var = tk.StringVar()
+booking_amount_entry_var.set("")
 
-final_price_update_entry_var = tk.StringVar()
-final_price_update_entry_var.set("")
+final_price_entry_var = tk.StringVar()
+final_price_entry_var.set("")
 
-booked_date_update_entry_var = tk.StringVar()
-booked_date_update_entry_var.set("")
+event_date_entry_var = tk.StringVar()
+event_date_entry_var.set("")
 
-booked_period_update_entry_var = tk.StringVar()
-booked_period_update_entry_var.set("")
+booked_period_entry_var = tk.StringVar()
+booked_period_entry_var.set("")
 
-booking_date_update_entry_var = tk.StringVar()
-booking_date_update_entry_var.set("")
+booking_date_entry_var = tk.StringVar()
+booking_date_entry_var.set("")
 # End
 
-updatePartyNameVar = []
-updateBookingDateVar = []
-updateBookingPeriodVar = []
-updatePaymentDone = []
-updateBkDateVar = []
-updateFinalPriceVar = []
+updatePartyNameArray = []
+updateEventDateArray = []
+updateBookingPeriodArray = []
+updatePaymentDoneArray = []
+updateBookingDateArray = []
+updateFinalFullPriceArray = []
 
 frameList = [start, regFrame, userFrame, bookAppointmentFrame, cancelAppointmentFrameByPartyName, cancelAppointmentFrameByDate, updateAppointmentFrame, printAppointmentFrame]
 # Configure all (main) Frames
@@ -564,11 +573,11 @@ tk.Label(regFrame, text="Password: ", font=("Courier", 18), bg='lightblue').grid
 
 # Entry Boxes
 tk.Entry(start, textvariable=username, font=("Courier", 18), bg='lightblue').grid(row=2, column=2)
-tk.Entry(start, textvariable=password, font=("Courier", 18), bg='lightblue').grid(row=3, column=2)
+tk.Entry(start, textvariable=password, font=("Courier", 18), bg='lightblue', show="*").grid(row=3, column=2)
 
 tk.Entry(regFrame, textvariable=name, font=("Courier", 18), bg='lightblue').grid(row=2, column=2)
 tk.Entry(regFrame, textvariable=username, font=("Courier", 18), bg='lightblue').grid(row=3, column=2)
-tk.Entry(regFrame, textvariable=password, font=("Courier", 18), bg='lightblue').grid(row=4, column=2)
+tk.Entry(regFrame, textvariable=password, font=("Courier", 18), bg='lightblue', show="*").grid(row=4, column=2)
 # Buttons
 tk.Button(start, font=("Courier", 18), padx=20, pady=10, bg='cyan', text="Login", command=login).grid(row=4, column=2)
 tk.Button(start, font=("Courier", 18), padx=20, pady=10, bg='cyan', text="Register", command=moveToReg).grid(row=4,
