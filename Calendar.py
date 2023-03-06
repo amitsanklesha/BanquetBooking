@@ -105,6 +105,7 @@ class Calendar:
         appointments = []
         bookingPeriod = []
 
+        bold_font = tk.font.Font(family="Helvetica", size=12, weight="bold")
         with open("appointments.txt", 'r') as appFile:
             reader = csv.reader(appFile)
             for row in reader:
@@ -158,7 +159,7 @@ class Calendar:
                     b.grid(row=w, column=d)
 
         sel = tk.Label(self.parent, height=2, bg=self.COLOR_OF_CALENDAR_LABEL, text='{} {} {} {}'.format(
-            self.day_name, calendar.month_name[self.month_selected], self.day_selected, self.year_selected))
+            self.day_name, calendar.month_name[self.month_selected], self.day_selected, self.year_selected), font=bold_font)
         self.wid.append(sel)
         sel.grid(row=8, column=0, columnspan=7)
 

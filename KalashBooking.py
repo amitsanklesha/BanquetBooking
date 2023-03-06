@@ -150,6 +150,12 @@ def createUserFrame():
                                                                                                                 column=4)
 
 
+def validate_input(new_text):
+    if "," in new_text:
+        return False
+    return True
+
+
 def bookAppointmentCall():
     tk.Label(bookAppointmentFrame, text="Book an Appointment", font=("Courier", 44), bg='lightblue').grid(row=1, column=1,
                                                                                                           columnspan=5)
@@ -164,7 +170,8 @@ def bookAppointmentCall():
 
     # Book Appointment frame/window starts
     # Party Name
-    partyName = tk.Entry(bookAppointmentFrame, borderwidth=5, background="white", width=35)
+    validate_cmd = bookAppointmentFrame.register(validate_input)
+    partyName = tk.Entry(bookAppointmentFrame, borderwidth=5, background="white", width=35, validate='key', validatecommand=(validate_cmd, "%P"))
     partyName.grid(row=2, column=2, columnspan=35)
 
     calendarFrame = tk.Frame(bookAppointmentFrame, borderwidth=5, bg="lightblue")
