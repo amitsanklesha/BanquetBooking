@@ -3,6 +3,7 @@ import csv
 import os.path
 from tkinter import messagebox
 from tkinter.ttk import Combobox
+from io import BytesIO
 
 import docx
 import win32api
@@ -11,6 +12,8 @@ from Calendar import Calendar
 from CalendarView import CalendarView
 from datetime import date
 from tkcalendar import DateEntry
+from PyPDF2 import PdfWriter, PdfReader
+from reportlab.pdfgen import canvas
 
 
 root = tk.Tk()
@@ -54,7 +57,7 @@ def moveToLogin():
 def moveToPrint():
     for widget in printAppointmentFrame.winfo_children():
         widget.destroy()
-    create_and_print_word_document()
+    # create_and_print_pdf_document()
     raiseFrame(printAppointmentFrame)
 
 
@@ -114,18 +117,31 @@ def register():
     raiseFrame(start)
 
 
-def create_and_print_word_document():
-    # Create a new Word document
-    doc = docx.Document()
+def create_and_print_pdf_document(doc_content, partyNamePrint, datePrint, periodPrint, type):
+    bookingtype = ""
+    if type == 0:
+        bookingtype = "New"
+    elif type == 1:
+        bookingtype = "Cancellation"
+    elif type == 2:
+        bookingtype = "Update"
+    # Create a new PDF file
+    output_pdf = PdfWriter()
 
-    # Add some text to the document
-    doc.add_paragraph('Hello, World!')
+    # Create a new page with reportlab
+    doc_name = dir_to_save + partyNamePrint + '_' + datePrint + '_' + periodPrint + '_' + bookingtype + 'Booking.pdf'
+    page = canvas.Canvas(BytesIO())
+    page.setPageSize((612, 792)) # Standard US letter size
+    page.drawString(50, 500, doc_content)
+    page.save()
 
-    # Save the document to a file
-    doc.save('D:\Ashok\my_word_document.docx')
+    # Add the page to the PDF file
+    output_pdf.add_page(PdfReader(BytesIO(page.getpdfdata())).pages[0])
 
-    # Print the document using the default printer
-    win32api.ShellExecute(0, "print", "D:\Ashok\my_word_document.docx", None, ".", 0)
+    # Save the PDF file to disk
+    outputStream = open(doc_name, "wb")
+    output_pdf.write(outputStream)
+    outputStream.close()
 
 
 def createUserFrame():
@@ -226,13 +242,25 @@ def makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPer
     bookingDate = str(datePickercalendar.day_selected) + "/" + str(datePickercalendar.month_selected) + "/" + str(
         datePickercalendar.year_selected)
 
-    with open("appointments.txt", 'a', newline="") as appFile:
-        writer = csv.writer(appFile)
-        writeList = [name.get(), bookingDate, partyName.get(), bookingPeriodComboBox.get(), agreedFinalPrice.get(), bookingAmount.get(), date_entry_when_booked.get()]
-        writer.writerow(writeList)
-        appFile.close()
-    messagebox.showinfo("Success!", "Appointment made!")
-    moveToUser()
+    msg_booking = "{} {} for {}\nat final price {};\noff which payment of {} is done. Ok to proceed?".format(bookingDate, bookingPeriodComboBox.get(), partyName.get(), agreedFinalPrice.get(), bookingAmount.get())
+    response = messagebox.askokcancel("Confirmation", "Are you sure to add new booking for:\n" + msg_booking)
+
+    if response == 1:
+        with open("appointments.txt", 'a', newline="") as appFile:
+            writer = csv.writer(appFile)
+            writeList = [name.get(), bookingDate, partyName.get(), bookingPeriodComboBox.get(), agreedFinalPrice.get(), bookingAmount.get(), date_entry_when_booked.get()]
+            writer.writerow(writeList)
+            appFile.close()
+
+            bookingDateForPrint = str(datePickercalendar.day_selected) + "_" + str(
+                datePickercalendar.month_selected) + "_" + str(
+                datePickercalendar.year_selected)
+
+            doc_content = "Successful booking done for {}".format(partyName.get())
+            create_and_print_pdf_document(doc_content, partyName.get(), bookingDateForPrint, bookingPeriodComboBox.get(), 0)
+
+        messagebox.showinfo("Success!", "Appointment made and PDF saved!")
+        moveToUser()
 
 
 def cancelAppointmentByName(optionmenu_var):
@@ -664,6 +692,8 @@ viewAppointmentFrame = tk.Frame(root)
 viewByDateAppointmentFrame = tk.Frame(root)
 updateAppointmentFrame = tk.Frame(root)
 printAppointmentFrame = tk.Frame(root)
+
+dir_to_save = "D:\Ashok\\"
 
 # Start Global Variable holders for Update operation
 update_optionmenu_var = tk.StringVar(updateAppointmentFrame)

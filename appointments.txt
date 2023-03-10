@@ -7,3 +7,6 @@ Amit Sanklesha,24/3/2023,EveningCheck1,Evening,55644,34542,05/03/2023
 Amit Sanklesha,22/3/2023,TestParty1,Full Day,50000,30000,05/03/2023
 Amit Sanklesha,14/3/2023,FullDayCheck,Full Day,90000,90000,05/03/2023
 Ashok Sanklesha,30/11/2023,SurbhiBday,Full Day,50000,30000,05/03/2023
+Amit Sanklesha,1/11/2023,AmitWrongBday,Evening,40000,40000,10/03/2023
+Amit Sanklesha,27/3/2023,SanjayVeera,Evening,45343,3432,11/03/2023
+Amit Sanklesha,17/3/2023,gsdfsfsdff,Evening,63636,454,11/03/2023

@@ -30,6 +30,7 @@ class Calendar:
         self.COLOR_OF_MORNING_DAY_BUTTONS = "yellow"
         self.COLOR_OF_EVENING_DAY_BUTTONS = "green"
         self.COLOR_OF_2BOOKINGS_DAY_BUTTONS = "blue"
+        self.COLOR_OF_SELECTED_EVENT_DATE = "magenta"
 
         self.setup(self.year, self.month)
 
@@ -158,7 +159,7 @@ class Calendar:
                     self.wid.append(b)
                     b.grid(row=w, column=d)
 
-        sel = tk.Label(self.parent, height=2, bg=self.COLOR_OF_CALENDAR_LABEL, text='{} {} {} {}'.format(
+        sel = tk.Label(self.parent, height=2, bg=self.COLOR_OF_SELECTED_EVENT_DATE, text='Selected Event date => {} {} {} {}'.format(
             self.day_name, calendar.month_name[self.month_selected], self.day_selected, self.year_selected), font=bold_font)
         self.wid.append(sel)
         sel.grid(row=8, column=0, columnspan=7)
