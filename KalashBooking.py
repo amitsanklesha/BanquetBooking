@@ -86,6 +86,13 @@ def moveToCancelByDate():
     raiseFrame(cancelAppointmentFrameByDate)
 
 
+def moveToView():
+    for widget in viewAppointmentFrame.winfo_children():
+        widget.destroy()
+    viewBookings()
+    raiseFrame(viewAppointmentFrame)
+
+
 # Calendar
 def moveToUser():
     for widget in userFrame.winfo_children():
@@ -144,6 +151,8 @@ def createUserFrame():
               command=moveToUpdate).grid(row=3, column=4)
     tk.Button(userFrame, font=("Courier", 18), bg='cyan', padx=15, pady=8, text="Print",
               command=moveToPrint).grid(row=3, column=5)
+    tk.Button(userFrame, font=("Courier", 18), bg='cyan', padx=15, pady=8, text="View",
+              command=moveToView).grid(row=4, column=2)
     tk.Button(userFrame, font=("Courier", 18), bg='cyan', padx=15, pady=8, text="Cancel (By date)",
               command=moveToCancelByDate).grid(row=4, column=3)
     tk.Button(userFrame, font=("Courier", 18), bg='cyan', padx=15, pady=8, text="Log Out", command=logOut).grid(row=4,
@@ -314,6 +323,117 @@ def update_values_with_data(*args):
     final_price_entry_var.set(updateFinalFullPriceArray[updateindex])
 
 
+def view_update_values_with_data(*args):
+    lookupValue = viewpartyNameHashMap[view_optionmenu_var.get()]
+    view_booking_amount_entry_var.set(lookupValue.split(',')[5])
+    view_event_date_entry_var.set(lookupValue.split(',')[1])
+    view_booked_period_entry_var.set(lookupValue.split(',')[3])
+    view_booking_date_entry_var.set(lookupValue.split(',')[6])
+    view_final_price_entry_var.set(lookupValue.split(',')[4])
+    view_party_name_entry_var.set(lookupValue.split(',')[2])
+
+
+def viewByDate_update_values_with_data(*args):
+    lookupValue = vieweventDateHashMap[viewbydate_optionmenu_var.get()]
+    viewbydate_booking_amount_entry_var.set(lookupValue.split(',')[5])
+    viewbydate_event_date_entry_var.set(lookupValue.split(',')[1])
+    viewbydate_booked_period_entry_var.set(lookupValue.split(',')[3])
+    viewbydate_booking_date_entry_var.set(lookupValue.split(',')[6])
+    viewbydate_final_price_entry_var.set(lookupValue.split(',')[4])
+    viewbydate_party_name_entry_var.set(lookupValue.split(',')[2])
+
+
+def viewBookings():
+    tk.Label(viewAppointmentFrame, text="View Bookings", font=("Courier", 44), bg='lightblue').grid(row=1, column=1,
+                                                                                                          columnspan=5)
+    tk.Label(viewAppointmentFrame, text="Select an option: ", font=("Courier", 16), bg='lightblue').grid(row=2, column=1)
+    tk.Label(viewAppointmentFrame, text="Party Name ", font=("Courier", 16), bg='lightblue').grid(row=3, column=1)
+    tk.Label(viewAppointmentFrame, text="Booked Event Date ", font=("Courier", 16), bg='lightblue').grid(row=4,
+                                                                                                            column=1)
+    tk.Label(viewAppointmentFrame, text="Selected Booking period ", font=("Courier", 16), bg='lightblue').grid(row=5,
+                                                                                                              column=1)
+    tk.Label(viewAppointmentFrame, text="Agreed Final Price ", font=("Courier", 16), bg='lightblue').grid(row=6, column=1)
+    tk.Label(viewAppointmentFrame, text="Booking Amount ", font=("Courier", 16), bg='lightblue').grid(row=7, column=1)
+    tk.Label(viewAppointmentFrame, text="Booking Date ", font=("Courier", 16), bg='lightblue').grid(
+        row=8, column=1)
+
+    values = readAppointmentsAllData()
+
+    viewpartyNameHashMap.clear()
+    vieweventDateHashMap.clear()
+
+    for item in values:
+        if len(item) > 4:
+            viewpartyNameHashMap[item.split(',')[2]] = item
+            vieweventDateHashMap[item.split(',')[1] + '|' + item.split(',')[3]] = item
+
+    # Current booking details to be displayed
+    tk.Label(viewAppointmentFrame, textvariable=view_party_name_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(row=3, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_party_name_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(row=3, column=18)
+
+    # Current booking details to be displayed
+    tk.Label(viewAppointmentFrame, textvariable=view_event_date_entry_var, font=("Courier", 12), bg='lightblue').grid(row=4, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_event_date_entry_var, font=("Courier", 12), bg='lightblue').grid(
+        row=4, column=18)
+
+    # Booking Period
+    tk.Label(viewAppointmentFrame, textvariable=view_booked_period_entry_var, font=("Courier", 12), bg='lightblue').grid(row=5, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_booked_period_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(row=5, column=18)
+
+    # Option menu for Party Name
+    viewOptionFrame1 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1, relief=tk.SOLID)
+    viewOptionFrame1.grid(row=2, column=2)
+    view_optionmenu_var.set("")
+    sorted_keys_party_name = sorted(viewpartyNameHashMap.keys())
+    optionmenu1 = tk.OptionMenu(viewOptionFrame1, view_optionmenu_var, *sorted_keys_party_name, command=view_update_values_with_data)
+    optionmenu1.grid(row=2, column=2, columnspan=45)
+
+    tk.Label(viewAppointmentFrame, text="", font=("Courier", 12), bg='lightblue').grid(row=2, column=3)
+
+    # Option menu for Date and Period
+    viewOptionFrame2 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1, relief=tk.SOLID)
+    viewOptionFrame2.grid(row=2, column=18)
+    viewbydate_optionmenu_var.set("")
+    sorted_keys_event_date = sorted(vieweventDateHashMap.keys())
+    optionmenu2 = tk.OptionMenu(viewOptionFrame2, viewbydate_optionmenu_var, *sorted_keys_event_date,
+                               command=viewByDate_update_values_with_data)
+    optionmenu2.grid(row=2, column=18, columnspan=45)
+
+    # Agreed final Price
+    tk.Label(viewAppointmentFrame, textvariable=view_final_price_entry_var, font=("Courier", 12), bg='lightblue').grid(row=6, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_final_price_entry_var, font=("Courier", 12), bg='lightblue').grid(
+        row=6, column=18)
+
+    # Booking Amount
+    tk.Label(viewAppointmentFrame, textvariable=view_booking_amount_entry_var, font=("Courier", 12), bg='lightblue').grid(
+        row=7, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_booking_amount_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(row=7, column=18)
+
+    # Booking date
+    tk.Label(viewAppointmentFrame, textvariable=view_booking_date_entry_var, font=("Courier", 12), bg='lightblue').grid(row=8, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_booking_date_entry_var, font=("Courier", 12), bg='lightblue').grid(
+        row=8, column=18)
+
+    # Constant comment
+    tk.Label(viewAppointmentFrame, text="*By Party Name", font=("Helvetica", 12, "italic"), bg='lightblue', fg="red").grid(row=9, column=2)
+    tk.Label(viewAppointmentFrame, text="*By Booking Date", font=("Helvetica", 12, "italic"), bg='lightblue', fg="red").grid(row=9, column=18)
+
+    # Calendar view
+    calendarViewFrame = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue")
+    calendarViewFrame.grid(row=2, column=24, columnspan=5, rowspan=7)
+    viewCalendar = CalendarView(calendarViewFrame, {name.get()})
+
+    tk.Label(viewAppointmentFrame, image=bookingimagePH, bg='lightblue').grid(row=2, column=30, rowspan=7, columnspan=5)
+
+    # View Appointment screen buttons
+    tk.Button(viewAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=gobackfromview).grid(row=13, column=5)
+    # View Appointment frame/window ends
+
+
 def updateButtonClick():
     tk.Label(updateAppointmentFrame, text="Update an Appointment", font=("Courier", 44), bg='lightblue').grid(row=1, column=1,
                                                                                                           columnspan=5)
@@ -364,8 +484,6 @@ def updateButtonClick():
     tk.Label(updateAppointmentFrame, image=bookingimagePH, bg='lightblue').grid(row=4, column=9)
 
     # Booking Period
-    updatebookingPeriodFrame = tk.Frame(updateAppointmentFrame, borderwidth=5, bg="lightblue")
-    updatebookingPeriodFrame.grid(row=5, column=2)
     updatebookingPeriodComboBox = Combobox(updateAppointmentFrame, background="lightblue", values=("Morning", "Evening", "Full Day"), textvariable=booked_period_entry_var)
     updatebookingPeriodComboBox.grid(row=5, column=2)
 
@@ -405,6 +523,23 @@ def gobackfromupdate():
     booked_period_entry_var.set("")
     booking_date_entry_var.set("")
     final_price_entry_var.set("")
+    moveToUser()
+
+
+def gobackfromview():
+    view_booking_amount_entry_var.set("")
+    view_event_date_entry_var.set("")
+    view_booked_period_entry_var.set("")
+    view_booking_date_entry_var.set("")
+    view_final_price_entry_var.set("")
+    view_party_name_entry_var.set("")
+
+    viewbydate_booking_amount_entry_var.set("")
+    viewbydate_event_date_entry_var.set("")
+    viewbydate_booked_period_entry_var.set("")
+    viewbydate_booking_date_entry_var.set("")
+    viewbydate_final_price_entry_var.set("")
+    viewbydate_party_name_entry_var.set("")
     moveToUser()
 
 
@@ -525,6 +660,8 @@ userFrame = tk.Frame(root)
 bookAppointmentFrame = tk.Frame(root)
 cancelAppointmentFrameByPartyName = tk.Frame(root)
 cancelAppointmentFrameByDate = tk.Frame(root)
+viewAppointmentFrame = tk.Frame(root)
+viewByDateAppointmentFrame = tk.Frame(root)
 updateAppointmentFrame = tk.Frame(root)
 printAppointmentFrame = tk.Frame(root)
 
@@ -547,6 +684,50 @@ booking_date_entry_var = tk.StringVar()
 booking_date_entry_var.set("")
 # End
 
+# Start Global Variable holders for View operation
+view_optionmenu_var = tk.StringVar(updateAppointmentFrame)
+
+view_party_name_entry_var = tk.StringVar()
+view_party_name_entry_var.set("")
+
+view_booking_amount_entry_var = tk.StringVar()
+view_booking_amount_entry_var.set("")
+
+view_final_price_entry_var = tk.StringVar()
+view_final_price_entry_var.set("")
+
+view_event_date_entry_var = tk.StringVar()
+view_event_date_entry_var.set("")
+
+view_booked_period_entry_var = tk.StringVar()
+view_booked_period_entry_var.set("")
+
+view_booking_date_entry_var = tk.StringVar()
+view_booking_date_entry_var.set("")
+# End
+
+# Start Global Variable holders for View By Date operation
+viewbydate_optionmenu_var = tk.StringVar(updateAppointmentFrame)
+
+viewbydate_party_name_entry_var = tk.StringVar()
+viewbydate_party_name_entry_var.set("")
+
+viewbydate_booking_amount_entry_var = tk.StringVar()
+viewbydate_booking_amount_entry_var.set("")
+
+viewbydate_final_price_entry_var = tk.StringVar()
+viewbydate_final_price_entry_var.set("")
+
+viewbydate_event_date_entry_var = tk.StringVar()
+viewbydate_event_date_entry_var.set("")
+
+viewbydate_booked_period_entry_var = tk.StringVar()
+viewbydate_booked_period_entry_var.set("")
+
+viewbydate_booking_date_entry_var = tk.StringVar()
+viewbydate_booking_date_entry_var.set("")
+# End
+
 updatePartyNameArray = []
 updateEventDateArray = []
 updateBookingPeriodArray = []
@@ -554,7 +735,10 @@ updatePaymentDoneArray = []
 updateBookingDateArray = []
 updateFinalFullPriceArray = []
 
-frameList = [start, regFrame, userFrame, bookAppointmentFrame, cancelAppointmentFrameByPartyName, cancelAppointmentFrameByDate, updateAppointmentFrame, printAppointmentFrame]
+viewpartyNameHashMap = {}
+vieweventDateHashMap = {}
+
+frameList = [start, regFrame, userFrame, bookAppointmentFrame, cancelAppointmentFrameByPartyName, cancelAppointmentFrameByDate, viewAppointmentFrame, viewByDateAppointmentFrame, updateAppointmentFrame, printAppointmentFrame]
 # Configure all (main) Frames
 for frame in frameList:
     frame.grid(row=0, column=0, sticky='news')
@@ -585,6 +769,7 @@ tk.Entry(start, textvariable=password, font=("Courier", 18), bg='lightblue', sho
 tk.Entry(regFrame, textvariable=name, font=("Courier", 18), bg='lightblue').grid(row=2, column=2)
 tk.Entry(regFrame, textvariable=username, font=("Courier", 18), bg='lightblue').grid(row=3, column=2)
 tk.Entry(regFrame, textvariable=password, font=("Courier", 18), bg='lightblue', show="*").grid(row=4, column=2)
+
 # Buttons
 tk.Button(start, font=("Courier", 18), padx=20, pady=10, bg='cyan', text="Login", command=login).grid(row=4, column=2)
 tk.Button(start, font=("Courier", 18), padx=20, pady=10, bg='cyan', text="Register", command=moveToReg).grid(row=4,
