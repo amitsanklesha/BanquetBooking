@@ -1,19 +1,19 @@
-import tkinter as tk
 import csv
 import os.path
+import tkinter as tk
+from datetime import date
+from datetime import datetime
+from io import BytesIO
 from tkinter import messagebox
 from tkinter.ttk import Combobox
-from io import BytesIO
 
 from PIL import Image, ImageTk
-from Calendar import Calendar
-from CalendarView import CalendarView
-from datetime import date
-from tkcalendar import DateEntry
 from PyPDF2 import PdfWriter, PdfReader
 from reportlab.pdfgen import canvas
-from datetime import datetime
+from tkcalendar import DateEntry
 
+from Calendar import Calendar
+from CalendarView import CalendarView
 
 root = tk.Tk()
 root.title("Kalash Banquet Booking")
@@ -104,7 +104,6 @@ def moveToUser():
 
 
 def register():
-    entries = []
     with open("users.txt", 'a', newline="") as userFile:
         writer = csv.writer(userFile)
         writeList = [name.get(), username.get(), password.get()]
@@ -117,20 +116,20 @@ def register():
 
 
 def create_and_print_pdf_document(doc_content, partyNamePrint, datePrint, periodPrint, type):
-    bookingtype = ""
+    booking_type = ""
     if type == 0:
-        bookingtype = "NewBooking"
+        booking_type = "NewBooking"
     elif type == 1:
-        bookingtype = "Cancellation"
+        booking_type = "Cancellation"
     elif type == 2:
-        bookingtype = "UpdateBooking"
+        booking_type = "UpdateBooking"
     # Create a new PDF file
     output_pdf = PdfWriter()
 
     # Create a new page with reportlab
-    doc_name = dir_to_save + partyNamePrint + '_' + datePrint + '_' + periodPrint + '_' + bookingtype + '.pdf'
+    doc_name = dir_to_save + partyNamePrint + '_' + datePrint + '_' + periodPrint + '_' + booking_type + '.pdf'
     page = canvas.Canvas(BytesIO())
-    page.setPageSize((612, 792)) # Standard US letter size
+    page.setPageSize((612, 792))  # Standard US letter size
     page.drawString(50, 500, doc_content)
     page.save()
 
@@ -151,7 +150,7 @@ def createUserFrame():
     global calendarViewFrame
     calendarViewFrame = tk.Frame(userFrame, borderwidth=5, bg="lightblue")
     calendarViewFrame.grid(row=2, column=1, columnspan=5)
-    viewCalendar = CalendarView(calendarViewFrame, {name.get()})
+    CalendarView(calendarViewFrame, {name.get()})
 
     tk.Label(userFrame, image=bookingimagePH, bg='lightblue').grid(row=2, column=5)
 
@@ -181,13 +180,16 @@ def validate_input(new_text):
 
 
 def bookAppointmentCall():
-    tk.Label(bookAppointmentFrame, text="Book an Appointment", font=("Courier", 44), bg='lightblue').grid(row=1, column=1,
+    tk.Label(bookAppointmentFrame, text="Book an Appointment", font=("Courier", 44), bg='lightblue').grid(row=1,
+                                                                                                          column=1,
                                                                                                           columnspan=5)
     tk.Label(bookAppointmentFrame, text="Party Name:", font=("Courier", 18), bg='lightblue').grid(row=2, column=1)
-    tk.Label(bookAppointmentFrame, text="Select Event Date: ", font=("Courier", 18), bg='lightblue').grid(row=3, column=1)
+    tk.Label(bookAppointmentFrame, text="Select Event Date: ", font=("Courier", 18), bg='lightblue').grid(row=3,
+                                                                                                          column=1)
     tk.Label(bookAppointmentFrame, text="Select Booking period: ", font=("Courier", 18), bg='lightblue').grid(row=4,
                                                                                                               column=1)
-    tk.Label(bookAppointmentFrame, text="Agreed Final Price", font=("Courier", 18), bg='lightblue').grid(row=5, column=1)
+    tk.Label(bookAppointmentFrame, text="Agreed Final Price", font=("Courier", 18), bg='lightblue').grid(row=5,
+                                                                                                         column=1)
     tk.Label(bookAppointmentFrame, text="Booking Amount", font=("Courier", 18), bg='lightblue').grid(row=6, column=1)
     tk.Label(bookAppointmentFrame, text="Booking Date (defaulted to today)", font=("Courier", 18), bg='lightblue').grid(
         row=7, column=1)
@@ -195,7 +197,8 @@ def bookAppointmentCall():
     # Book Appointment frame/window starts
     # Party Name
     validate_cmd = bookAppointmentFrame.register(validate_input)
-    partyName = tk.Entry(bookAppointmentFrame, borderwidth=5, background="white", width=35, validate='key', validatecommand=(validate_cmd, "%P"))
+    partyName = tk.Entry(bookAppointmentFrame, borderwidth=5, background="white", width=35, validate='key',
+                         validatecommand=(validate_cmd, "%P"))
     partyName.grid(row=2, column=2, columnspan=35)
 
     calendarFrame = tk.Frame(bookAppointmentFrame, borderwidth=5, bg="lightblue")
@@ -231,27 +234,43 @@ def bookAppointmentCall():
 
     # Book Appointment screen buttons
     tk.Button(bookAppointmentFrame, font=("Courier", 18), bg='cyan', text="Make Appointment",
-              command=lambda: makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox, agreedFinalPrice, bookingAmount, date_entry_when_booked)).grid(row=8, column=2)
-    tk.Button(bookAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=8, column=1)
+              command=lambda: makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox,
+                                              agreedFinalPrice, bookingAmount, date_entry_when_booked)).grid(row=8,
+                                                                                                             column=2)
+    tk.Button(bookAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=8,
+                                                                                                           column=1)
     # Book Appointment frame/window ends
 
 
-def makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox, agreedFinalPrice, bookingAmount, date_entry_when_booked):
+def makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox, agreedFinalPrice,
+                    bookingAmount, date_entry_when_booked):
     if partyName.get() == '' or partyName.get().strip() == '' or bookingPeriodComboBox.get() == '' or agreedFinalPrice.get() == '' or agreedFinalPrice.get().strip() == '' or bookingAmount.get() == '' or bookingAmount.get().strip() == '':
         messagebox.showerror("Error", "One of more fields is missing. Please input all data to proceed")
         return
+
+    with open("appointments.txt", 'r') as f:
+        lines = f.readlines()
+        f.close()
 
     # Format date
     bookingDate = str(datePickercalendar.day_selected) + "/" + str(datePickercalendar.month_selected) + "/" + str(
         datePickercalendar.year_selected)
 
-    msg_booking = "{} {} for {}\nat final price {};\noff which payment of {} is done. Ok to proceed?".format(bookingDate, bookingPeriodComboBox.get(), partyName.get(), agreedFinalPrice.get(), bookingAmount.get())
+    for line in lines:
+        if len(line) > 4 and line.strip().split(',')[1] == bookingDate and line.strip().split(',')[3] == bookingPeriodComboBox.get():
+            messagebox.showerror("Error", "One {} {} booking is already present, you cannot rebook.".format(bookingDate,
+                                                                                                            bookingPeriodComboBox.get()))
+            return
+
+    msg_booking = "{} {} for {}\nat final price {};\noff which payment of {} is done. Ok to proceed?".format(
+        bookingDate, bookingPeriodComboBox.get(), partyName.get(), agreedFinalPrice.get(), bookingAmount.get())
     response = messagebox.askyesno("Confirmation", "Are you sure to add new booking for:\n" + msg_booking)
 
     if response == 1:
         with open("appointments.txt", 'a', newline="") as appFile:
             writer = csv.writer(appFile)
-            writeList = [name.get(), bookingDate, partyName.get(), bookingPeriodComboBox.get(), agreedFinalPrice.get(), bookingAmount.get(), date_entry_when_booked.get()]
+            writeList = [name.get(), bookingDate, partyName.get(), bookingPeriodComboBox.get(), agreedFinalPrice.get(),
+                         bookingAmount.get(), date_entry_when_booked.get()]
             writer.writerow(writeList)
             appFile.close()
 
@@ -283,8 +302,10 @@ def cancelAppointmentByName(optionmenu_var):
 
     doc_content = "Successful cancellation done for {}".format(deleted_line.strip().split(',')[2])
     date_string = deleted_line.strip().split(',')[1]
-    bookingDateForPrint = str(date_string.split('/')[0]) + "_" + str(date_string.split('/')[1]) + "_" + str(date_string.split('/')[2])
-    create_and_print_pdf_document(doc_content, deleted_line.strip().split(',')[2], bookingDateForPrint, deleted_line.strip().split(',')[3], 1)
+    bookingDateForPrint = str(date_string.split('/')[0]) + "_" + str(date_string.split('/')[1]) + "_" + str(
+        date_string.split('/')[2])
+    create_and_print_pdf_document(doc_content, deleted_line.strip().split(',')[2], bookingDateForPrint,
+                                  deleted_line.strip().split(',')[3], 1)
 
     messagebox.showinfo("Success!", "{} booking deleted and PDF generated!".format(str(entry)))
     calendarViewFrame = tk.Frame(userFrame, borderwidth=5, bg="lightblue")
@@ -293,7 +314,7 @@ def cancelAppointmentByName(optionmenu_var):
     moveToUser()
 
 
-def cancelAppointmentByDate(optionmenu_var):
+def cancel_appointment_by_date(optionmenu_var):
     deleted_line = ""
     response = messagebox.askyesno("Confirmation", "Are you sure to cancel booking for " + optionmenu_var.get())
     if response == 0:
@@ -307,7 +328,8 @@ def cancelAppointmentByDate(optionmenu_var):
                 f.write(line)
             elif len(line) > 4 and line.strip().split(',')[3] != entry.split('|')[1]:
                 f.write(line)
-            elif len(line) > 4 and line.strip().split(',')[1] == entry.split('|')[0] and line.strip().split(',')[3] == entry.split('|')[1]:
+            elif len(line) > 4 and line.strip().split(',')[1] == entry.split('|')[0] and line.strip().split(',')[3] == \
+                    entry.split('|')[1]:
                 deleted_line = line
 
     doc_content = "Successful cancellation done for {}".format(deleted_line.strip().split(',')[2])
@@ -326,7 +348,8 @@ def cancelAppointmentByDate(optionmenu_var):
 
 def cancelFrameWorkByPartyName():
     # Cancel Appointment by Party Name frame/window starts
-    tk.Label(cancelAppointmentFrameByPartyName, text="By Party Name:", font=("Courier", 18), bg='lightblue').grid(row=3, column=3)
+    tk.Label(cancelAppointmentFrameByPartyName, text="By Party Name:", font=("Courier", 18), bg='lightblue').grid(row=3,
+                                                                                                                  column=3)
 
     values = sorted(readAppointmentsForPartyName(), key=str.lower)
 
@@ -342,7 +365,8 @@ def cancelFrameWorkByPartyName():
     # Cancel Appointment by Party Name screen buttons
     tk.Button(cancelAppointmentFrameByPartyName, font=("Courier", 18), bg='cyan', text="Cancel Appointment",
               command=lambda: cancelAppointmentByName(optionmenu_var)).grid(row=8, column=3)
-    tk.Button(cancelAppointmentFrameByPartyName, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=8, column=4)
+    tk.Button(cancelAppointmentFrameByPartyName, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(
+        row=8, column=4)
     # Cancel Appointment by Party Name frame/window ends
 
 
@@ -370,8 +394,9 @@ def cancelFrameWorkByDate():
 
     # Cancel Appointment by Date screen buttons
     tk.Button(cancelAppointmentFrameByDate, font=("Courier", 18), bg='cyan', text="Cancel Appointment",
-              command=lambda: cancelAppointmentByDate(optionmenu_var)).grid(row=8, column=3)
-    tk.Button(cancelAppointmentFrameByDate, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=8, column=4)
+              command=lambda: cancel_appointment_by_date(optionmenu_var)).grid(row=8, column=3)
+    tk.Button(cancelAppointmentFrameByDate, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(
+        row=8, column=4)
     # Cancel Appointment by Date frame/window ends
 
 
@@ -407,14 +432,16 @@ def viewByDate_update_values_with_data(*args):
 
 def viewBookings():
     tk.Label(viewAppointmentFrame, text="View Bookings", font=("Courier", 44), bg='lightblue').grid(row=1, column=1,
-                                                                                                          columnspan=5)
-    tk.Label(viewAppointmentFrame, text="Select an option: ", font=("Courier", 16), bg='lightblue').grid(row=2, column=1)
+                                                                                                    columnspan=5)
+    tk.Label(viewAppointmentFrame, text="Select an option: ", font=("Courier", 16), bg='lightblue').grid(row=2,
+                                                                                                         column=1)
     tk.Label(viewAppointmentFrame, text="Party Name ", font=("Courier", 16), bg='lightblue').grid(row=3, column=1)
     tk.Label(viewAppointmentFrame, text="Booked Event Date ", font=("Courier", 16), bg='lightblue').grid(row=4,
-                                                                                                            column=1)
+                                                                                                         column=1)
     tk.Label(viewAppointmentFrame, text="Selected Booking period ", font=("Courier", 16), bg='lightblue').grid(row=5,
-                                                                                                              column=1)
-    tk.Label(viewAppointmentFrame, text="Agreed Final Price ", font=("Courier", 16), bg='lightblue').grid(row=6, column=1)
+                                                                                                               column=1)
+    tk.Label(viewAppointmentFrame, text="Agreed Final Price ", font=("Courier", 16), bg='lightblue').grid(row=6,
+                                                                                                          column=1)
     tk.Label(viewAppointmentFrame, text="Booking Amount ", font=("Courier", 16), bg='lightblue').grid(row=7, column=1)
     tk.Label(viewAppointmentFrame, text="Booking Date ", font=("Courier", 16), bg='lightblue').grid(
         row=8, column=1)
@@ -436,78 +463,96 @@ def viewBookings():
              bg='lightblue').grid(row=3, column=18)
 
     # Current booking details to be displayed
-    tk.Label(viewAppointmentFrame, textvariable=view_event_date_entry_var, font=("Courier", 12), bg='lightblue').grid(row=4, column=2)
-    tk.Label(viewAppointmentFrame, textvariable=viewbydate_event_date_entry_var, font=("Courier", 12), bg='lightblue').grid(
+    tk.Label(viewAppointmentFrame, textvariable=view_event_date_entry_var, font=("Courier", 12), bg='lightblue').grid(
+        row=4, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_event_date_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(
         row=4, column=18)
 
     # Booking Period
-    tk.Label(viewAppointmentFrame, textvariable=view_booked_period_entry_var, font=("Courier", 12), bg='lightblue').grid(row=5, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=view_booked_period_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(row=5, column=2)
     tk.Label(viewAppointmentFrame, textvariable=viewbydate_booked_period_entry_var, font=("Courier", 12),
              bg='lightblue').grid(row=5, column=18)
 
     # Option menu for Party Name
-    viewOptionFrame1 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1, relief=tk.SOLID)
+    viewOptionFrame1 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1,
+                                relief=tk.SOLID)
     viewOptionFrame1.grid(row=2, column=2)
     view_optionmenu_var.set("")
     sorted_keys_party_name = sorted(viewpartyNameHashMap.keys(), key=str.lower)
-    optionmenu1 = tk.OptionMenu(viewOptionFrame1, view_optionmenu_var, *sorted_keys_party_name, command=view_update_values_with_data)
+    optionmenu1 = tk.OptionMenu(viewOptionFrame1, view_optionmenu_var, *sorted_keys_party_name,
+                                command=view_update_values_with_data)
     optionmenu1.grid(row=2, column=2, columnspan=45)
 
     tk.Label(viewAppointmentFrame, text="", font=("Courier", 12), bg='lightblue').grid(row=2, column=3)
 
     # Option menu for Date and Period
-    viewOptionFrame2 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1, relief=tk.SOLID)
+    viewOptionFrame2 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1,
+                                relief=tk.SOLID)
     viewOptionFrame2.grid(row=2, column=18)
     viewbydate_optionmenu_var.set("")
     sorted_keys_event_date = sorted(vieweventDateHashMap.keys(), key=get_date)
     optionmenu2 = tk.OptionMenu(viewOptionFrame2, viewbydate_optionmenu_var, *sorted_keys_event_date,
-                               command=viewByDate_update_values_with_data)
+                                command=viewByDate_update_values_with_data)
     optionmenu2.grid(row=2, column=18, columnspan=45)
 
     # Agreed final Price
-    tk.Label(viewAppointmentFrame, textvariable=view_final_price_entry_var, font=("Courier", 12), bg='lightblue').grid(row=6, column=2)
-    tk.Label(viewAppointmentFrame, textvariable=viewbydate_final_price_entry_var, font=("Courier", 12), bg='lightblue').grid(
+    tk.Label(viewAppointmentFrame, textvariable=view_final_price_entry_var, font=("Courier", 12), bg='lightblue').grid(
+        row=6, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_final_price_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(
         row=6, column=18)
 
     # Booking Amount
-    tk.Label(viewAppointmentFrame, textvariable=view_booking_amount_entry_var, font=("Courier", 12), bg='lightblue').grid(
+    tk.Label(viewAppointmentFrame, textvariable=view_booking_amount_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(
         row=7, column=2)
     tk.Label(viewAppointmentFrame, textvariable=viewbydate_booking_amount_entry_var, font=("Courier", 12),
              bg='lightblue').grid(row=7, column=18)
 
     # Booking date
-    tk.Label(viewAppointmentFrame, textvariable=view_booking_date_entry_var, font=("Courier", 12), bg='lightblue').grid(row=8, column=2)
-    tk.Label(viewAppointmentFrame, textvariable=viewbydate_booking_date_entry_var, font=("Courier", 12), bg='lightblue').grid(
+    tk.Label(viewAppointmentFrame, textvariable=view_booking_date_entry_var, font=("Courier", 12), bg='lightblue').grid(
+        row=8, column=2)
+    tk.Label(viewAppointmentFrame, textvariable=viewbydate_booking_date_entry_var, font=("Courier", 12),
+             bg='lightblue').grid(
         row=8, column=18)
 
     # Constant comment
-    tk.Label(viewAppointmentFrame, text="*By Party Name", font=("Helvetica", 12, "italic"), bg='lightblue', fg="red").grid(row=9, column=2)
-    tk.Label(viewAppointmentFrame, text="*By Booking Date", font=("Helvetica", 12, "italic"), bg='lightblue', fg="red").grid(row=9, column=18)
+    tk.Label(viewAppointmentFrame, text="*By Party Name", font=("Helvetica", 12, "italic"), bg='lightblue',
+             fg="red").grid(row=9, column=2)
+    tk.Label(viewAppointmentFrame, text="*By Booking Date", font=("Helvetica", 12, "italic"), bg='lightblue',
+             fg="red").grid(row=9, column=18)
 
     # Calendar view
     calendarViewFrame = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue")
     calendarViewFrame.grid(row=2, column=24, columnspan=5, rowspan=7)
-    viewCalendar = CalendarView(calendarViewFrame, {name.get()})
+    CalendarView(calendarViewFrame, {name.get()})
 
     tk.Label(viewAppointmentFrame, image=bookingimagePH, bg='lightblue').grid(row=2, column=30, rowspan=7, columnspan=5)
 
     # View Appointment screen buttons
-    tk.Button(viewAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=gobackfromview).grid(row=13, column=5)
+    tk.Button(viewAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=gobackfromview).grid(row=13,
+                                                                                                               column=5)
     # View Appointment frame/window ends
 
 
 def updateButtonClick():
-    tk.Label(updateAppointmentFrame, text="Update an Appointment", font=("Courier", 44), bg='lightblue').grid(row=1, column=1,
-                                                                                                          columnspan=5)
+    tk.Label(updateAppointmentFrame, text="Update an Appointment", font=("Courier", 44), bg='lightblue').grid(row=1,
+                                                                                                              column=1,
+                                                                                                              columnspan=5)
     tk.Label(updateAppointmentFrame, text="Party Name:", font=("Courier", 18), bg='lightblue').grid(row=2, column=1)
     tk.Label(updateAppointmentFrame, text="Booked Event Details: ", font=("Courier", 18), bg='lightblue').grid(row=3,
+                                                                                                               column=1)
+    tk.Label(updateAppointmentFrame, text="Select Event Date: ", font=("Courier", 18), bg='lightblue').grid(row=4,
                                                                                                             column=1)
-    tk.Label(updateAppointmentFrame, text="Select Event Date: ", font=("Courier", 18), bg='lightblue').grid(row=4, column=1)
     tk.Label(updateAppointmentFrame, text="Select Booking period: ", font=("Courier", 18), bg='lightblue').grid(row=5,
-                                                                                                              column=1)
-    tk.Label(updateAppointmentFrame, text="Agreed Final Price:", font=("Courier", 18), bg='lightblue').grid(row=6, column=1)
+                                                                                                                column=1)
+    tk.Label(updateAppointmentFrame, text="Agreed Final Price:", font=("Courier", 18), bg='lightblue').grid(row=6,
+                                                                                                            column=1)
     tk.Label(updateAppointmentFrame, text="Booking Amount:", font=("Courier", 18), bg='lightblue').grid(row=7, column=1)
-    tk.Label(updateAppointmentFrame, text="Re-Booking Date (defaulted to today):", font=("Courier", 18), bg='lightblue').grid(
+    tk.Label(updateAppointmentFrame, text="Re-Booking Date (defaulted to today):", font=("Courier", 18),
+             bg='lightblue').grid(
         row=8, column=1)
 
     values = readAppointmentsAllData()
@@ -529,14 +574,16 @@ def updateButtonClick():
             updateFinalFullPriceArray.append(item.split(',')[4])
 
     # Current booking details to be displayed
-    tk.Label(updateAppointmentFrame, textvariable=event_date_entry_var, font=("Courier", 12), bg='lightblue').grid(row=3, column=2)
+    tk.Label(updateAppointmentFrame, textvariable=event_date_entry_var, font=("Courier", 12), bg='lightblue').grid(
+        row=3, column=2)
 
     # Event Date
     # Create a variable to hold the state of the checkbox
     checkbox_state = tk.BooleanVar()
 
     # Create a Checkbutton and associate it with the variable
-    checkbox = tk.Checkbutton(updateAppointmentFrame, text="Select if change of date\n and/or booking period", variable=checkbox_state, bg="lightblue")
+    checkbox = tk.Checkbutton(updateAppointmentFrame, text="Select if change of date\n and/or booking period",
+                              variable=checkbox_state, bg="lightblue")
     checkbox.grid(row=4, column=2)
 
     updatecalendarFrame = tk.Frame(updateAppointmentFrame, borderwidth=5, bg="lightblue")
@@ -546,7 +593,9 @@ def updateButtonClick():
     tk.Label(updateAppointmentFrame, image=bookingimagePH, bg='lightblue').grid(row=4, column=9)
 
     # Booking Period
-    updatebookingPeriodComboBox = Combobox(updateAppointmentFrame, background="lightblue", values=("Morning", "Evening", "Full Day"), textvariable=booked_period_entry_var)
+    updatebookingPeriodComboBox = Combobox(updateAppointmentFrame, background="lightblue",
+                                           values=("Morning", "Evening", "Full Day"),
+                                           textvariable=booked_period_entry_var)
     updatebookingPeriodComboBox.grid(row=5, column=2)
 
     # Option menu for Party Name
@@ -557,25 +606,31 @@ def updateButtonClick():
 
     # Agreed final Price
     validateUpdateInt1 = (updateAppointmentFrame.register(validate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
-    agreedUpdateFinalPrice = tk.Entry(updateAppointmentFrame, borderwidth=5, background="white", width=15, validate='key',
+    agreedUpdateFinalPrice = tk.Entry(updateAppointmentFrame, borderwidth=5, background="white", width=15,
+                                      validate='key',
                                       validatecommand=validateUpdateInt1, textvariable=final_price_entry_var)
     agreedUpdateFinalPrice.grid(row=6, column=2)
 
     # Booking Amount
-    updatebookingAmount = tk.Entry(updateAppointmentFrame, borderwidth=5, background="white", width=15, textvariable=booking_amount_entry_var, validate='key', validatecommand=validateUpdateInt1)
+    updatebookingAmount = tk.Entry(updateAppointmentFrame, borderwidth=5, background="white", width=15,
+                                   textvariable=booking_amount_entry_var, validate='key',
+                                   validatecommand=validateUpdateInt1)
     updatebookingAmount.grid(row=7, column=2)
 
     update_date_var = tk.StringVar()
     update_date_var.set(date.today().strftime("%d/%m/%Y"))
-    update_date_entry_when_booked = DateEntry(updateAppointmentFrame, width=12, textvariable=booking_date_entry_var, date_pattern="dd/mm/yyyy")
+    update_date_entry_when_booked = DateEntry(updateAppointmentFrame, width=12, textvariable=booking_date_entry_var,
+                                              date_pattern="dd/mm/yyyy")
     update_date_entry_when_booked.grid(row=8, column=2)
 
     # Update Appointment screen buttons
     tk.Button(updateAppointmentFrame, font=("Courier", 18), bg='cyan', text="Update Appointment",
               command=lambda: updateAppointment(updatecalendarFrame, updatePickercalendar, update_optionmenu_var,
-                                              updatebookingPeriodComboBox, agreedUpdateFinalPrice, updatebookingAmount,
-                                              update_date_entry_when_booked, checkbox_state)).grid(row=9, column=2)
-    tk.Button(updateAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=gobackfromupdate).grid(row=9, column=1)
+                                                updatebookingPeriodComboBox, agreedUpdateFinalPrice,
+                                                updatebookingAmount,
+                                                update_date_entry_when_booked, checkbox_state)).grid(row=9, column=2)
+    tk.Button(updateAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=gobackfromupdate).grid(
+        row=9, column=1)
     # Update Appointment frame/window ends
 
 
@@ -605,7 +660,8 @@ def gobackfromview():
     moveToUser()
 
 
-def updateAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox, agreedFinalPrice, bookingAmount, date_entry_when_booked, checkbox_state):
+def updateAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox, agreedFinalPrice,
+                      bookingAmount, date_entry_when_booked, checkbox_state):
     # Format date
     if checkbox_state.get():
         bookingDate = str(datePickercalendar.day_selected) + "/" + str(datePickercalendar.month_selected) + "/" + str(
@@ -626,7 +682,8 @@ def updateAppointment(calendarViewFrame, datePickercalendar, partyName, bookingP
             if len(line) > 4 and line.strip().split(',')[2] != partyName.get():
                 f.write(line)
         writer = csv.writer(f)
-        writeList = [name.get(), bookingDate, partyName.get(), bookingPeriod, agreedFinalPrice.get(), bookingAmount.get(), date_entry_when_booked.get()]
+        writeList = [name.get(), bookingDate, partyName.get(), bookingPeriod, agreedFinalPrice.get(),
+                     bookingAmount.get(), date_entry_when_booked.get()]
         writer.writerow(writeList)
         f.close()
 
@@ -667,8 +724,8 @@ def logOut():
 
 
 def highlight_dates(bookedDates, cal):
-    for date in bookedDates:
-        cal.tag_config(date, background='red')
+    for dateVal in bookedDates:
+        cal.tag_config(dateVal, background='red')
 
 
 def readAppointmentsAllData():
@@ -802,7 +859,9 @@ updateFinalFullPriceArray = []
 viewpartyNameHashMap = {}
 vieweventDateHashMap = {}
 
-frameList = [start, regFrame, userFrame, bookAppointmentFrame, cancelAppointmentFrameByPartyName, cancelAppointmentFrameByDate, viewAppointmentFrame, viewByDateAppointmentFrame, updateAppointmentFrame, printAppointmentFrame]
+frameList = [start, regFrame, userFrame, bookAppointmentFrame, cancelAppointmentFrameByPartyName,
+             cancelAppointmentFrameByDate, viewAppointmentFrame, viewByDateAppointmentFrame, updateAppointmentFrame,
+             printAppointmentFrame]
 # Configure all (main) Frames
 for frame in frameList:
     frame.grid(row=0, column=0, sticky='news')

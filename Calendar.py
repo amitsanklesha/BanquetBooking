@@ -1,13 +1,7 @@
 import calendar
-import datetime
-import sys
 import csv
-
-# imports correct version of tkinter based on python version
-if sys.version[0] == '2':
-    import Tkinter as tk
-else:
-    import tkinter as tk
+import datetime
+import tkinter as tk
 
 
 class Calendar:
@@ -30,7 +24,7 @@ class Calendar:
         self.COLOR_OF_MORNING_DAY_BUTTONS = "yellow"
         self.COLOR_OF_EVENING_DAY_BUTTONS = "green"
         self.COLOR_OF_2BOOKINGS_DAY_BUTTONS = "blue"
-        self.COLOR_OF_SELECTED_EVENT_DATE = "magenta"
+        self.COLOR_OF_SELECTED_EVENT_DATE = "orange"
 
         self.setup(self.year, self.month)
 
@@ -106,7 +100,7 @@ class Calendar:
         appointments = []
         bookingPeriod = []
 
-        bold_font = tk.font.Font(family="Helvetica", size=12, weight="bold")
+        bold_font = tk.font.Font(family="Helvetica", size=10, weight="bold")
         with open("appointments.txt", 'r') as appFile:
             reader = csv.reader(appFile)
             for row in reader:
@@ -159,11 +153,27 @@ class Calendar:
                     self.wid.append(b)
                     b.grid(row=w, column=d)
 
-        sel = tk.Label(self.parent, height=2, bg=self.COLOR_OF_SELECTED_EVENT_DATE, text='Selected Event date => {} {} {}'.format(
-            calendar.month_name[self.month_selected], self.day_selected, self.year_selected), font=bold_font)
+        sel = BlinkingLabel(self.parent, height=2, bg=self.COLOR_OF_SELECTED_EVENT_DATE,
+                            text='Selected Event date => {} {} {}'.format(
+                                calendar.month_name[self.month_selected], self.day_selected, self.year_selected),
+                            font=bold_font)
         self.wid.append(sel)
         sel.grid(row=8, column=0, columnspan=7)
 
     # Quit out of the calendar and terminate tkinter instance.
     def kill_and_save(self):
         self.parent.destroy()
+
+
+class BlinkingLabel(tk.Label):
+    def __init__(self, master=None, **kw):
+        super().__init__(master, **kw)
+        self._blink = False
+        self._blink_color = self['foreground']
+        self.blink()
+
+    def blink(self):
+        self._blink = not self._blink
+        color = self._blink_color if self._blink else self.master['bg']
+        self.config(foreground=color)
+        self.after(500, self.blink)
