@@ -5,8 +5,6 @@ from tkinter import messagebox
 from tkinter.ttk import Combobox
 from io import BytesIO
 
-import docx
-import win32api
 from PIL import Image, ImageTk
 from Calendar import Calendar
 from CalendarView import CalendarView
@@ -14,6 +12,7 @@ from datetime import date
 from tkcalendar import DateEntry
 from PyPDF2 import PdfWriter, PdfReader
 from reportlab.pdfgen import canvas
+from datetime import datetime
 
 
 root = tk.Tk()
@@ -120,16 +119,16 @@ def register():
 def create_and_print_pdf_document(doc_content, partyNamePrint, datePrint, periodPrint, type):
     bookingtype = ""
     if type == 0:
-        bookingtype = "New"
+        bookingtype = "NewBooking"
     elif type == 1:
         bookingtype = "Cancellation"
     elif type == 2:
-        bookingtype = "Update"
+        bookingtype = "UpdateBooking"
     # Create a new PDF file
     output_pdf = PdfWriter()
 
     # Create a new page with reportlab
-    doc_name = dir_to_save + partyNamePrint + '_' + datePrint + '_' + periodPrint + '_' + bookingtype + 'Booking.pdf'
+    doc_name = dir_to_save + partyNamePrint + '_' + datePrint + '_' + periodPrint + '_' + bookingtype + '.pdf'
     page = canvas.Canvas(BytesIO())
     page.setPageSize((612, 792)) # Standard US letter size
     page.drawString(50, 500, doc_content)
@@ -238,12 +237,16 @@ def bookAppointmentCall():
 
 
 def makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox, agreedFinalPrice, bookingAmount, date_entry_when_booked):
+    if partyName.get() == '' or partyName.get().strip() == '' or bookingPeriodComboBox.get() == '' or agreedFinalPrice.get() == '' or agreedFinalPrice.get().strip() == '' or bookingAmount.get() == '' or bookingAmount.get().strip() == '':
+        messagebox.showerror("Error", "One of more fields is missing. Please input all data to proceed")
+        return
+
     # Format date
     bookingDate = str(datePickercalendar.day_selected) + "/" + str(datePickercalendar.month_selected) + "/" + str(
         datePickercalendar.year_selected)
 
     msg_booking = "{} {} for {}\nat final price {};\noff which payment of {} is done. Ok to proceed?".format(bookingDate, bookingPeriodComboBox.get(), partyName.get(), agreedFinalPrice.get(), bookingAmount.get())
-    response = messagebox.askokcancel("Confirmation", "Are you sure to add new booking for:\n" + msg_booking)
+    response = messagebox.askyesno("Confirmation", "Are you sure to add new booking for:\n" + msg_booking)
 
     if response == 1:
         with open("appointments.txt", 'a', newline="") as appFile:
@@ -252,18 +255,22 @@ def makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPer
             writer.writerow(writeList)
             appFile.close()
 
-            bookingDateForPrint = str(datePickercalendar.day_selected) + "_" + str(
-                datePickercalendar.month_selected) + "_" + str(
-                datePickercalendar.year_selected)
+        bookingDateForPrint = str(datePickercalendar.day_selected) + "_" + str(
+            datePickercalendar.month_selected) + "_" + str(
+            datePickercalendar.year_selected)
 
-            doc_content = "Successful booking done for {}".format(partyName.get())
-            create_and_print_pdf_document(doc_content, partyName.get(), bookingDateForPrint, bookingPeriodComboBox.get(), 0)
+        doc_content = "Successful booking done for {}".format(partyName.get())
+        create_and_print_pdf_document(doc_content, partyName.get(), bookingDateForPrint, bookingPeriodComboBox.get(), 0)
 
-        messagebox.showinfo("Success!", "Appointment made and PDF saved!")
+        messagebox.showinfo("Success!", "Appointment made and PDF generated!")
         moveToUser()
 
 
 def cancelAppointmentByName(optionmenu_var):
+    deleted_line = ""
+    response = messagebox.askyesno("Confirmation", "Are you sure to cancel booking for " + optionmenu_var.get())
+    if response == 0:
+        return
     entry = optionmenu_var.get()
     with open("appointments.txt", 'r') as f:
         lines = f.readlines()
@@ -271,8 +278,15 @@ def cancelAppointmentByName(optionmenu_var):
         for line in lines:
             if len(line) > 4 and line.strip().split(',')[2] != entry:
                 f.write(line)
+            elif len(line) > 4:
+                deleted_line = line
 
-    messagebox.showinfo("Success!", "{} booking deleted!".format(str(entry)))
+    doc_content = "Successful cancellation done for {}".format(deleted_line.strip().split(',')[2])
+    date_string = deleted_line.strip().split(',')[1]
+    bookingDateForPrint = str(date_string.split('/')[0]) + "_" + str(date_string.split('/')[1]) + "_" + str(date_string.split('/')[2])
+    create_and_print_pdf_document(doc_content, deleted_line.strip().split(',')[2], bookingDateForPrint, deleted_line.strip().split(',')[3], 1)
+
+    messagebox.showinfo("Success!", "{} booking deleted and PDF generated!".format(str(entry)))
     calendarViewFrame = tk.Frame(userFrame, borderwidth=5, bg="lightblue")
     calendarViewFrame.grid(row=2, column=1, columnspan=5)
     viewCalendar = CalendarView(calendarViewFrame, {name.get()})
@@ -280,6 +294,10 @@ def cancelAppointmentByName(optionmenu_var):
 
 
 def cancelAppointmentByDate(optionmenu_var):
+    deleted_line = ""
+    response = messagebox.askyesno("Confirmation", "Are you sure to cancel booking for " + optionmenu_var.get())
+    if response == 0:
+        return
     entry = optionmenu_var.get()
     with open("appointments.txt", 'r') as f:
         lines = f.readlines()
@@ -289,8 +307,17 @@ def cancelAppointmentByDate(optionmenu_var):
                 f.write(line)
             elif len(line) > 4 and line.strip().split(',')[3] != entry.split('|')[1]:
                 f.write(line)
+            elif len(line) > 4 and line.strip().split(',')[1] == entry.split('|')[0] and line.strip().split(',')[3] == entry.split('|')[1]:
+                deleted_line = line
 
-    messagebox.showinfo("Success!", "{} booking deleted!".format(str(entry)))
+    doc_content = "Successful cancellation done for {}".format(deleted_line.strip().split(',')[2])
+    date_string = deleted_line.strip().split(',')[1]
+    bookingDateForPrint = str(date_string.split('/')[0]) + "_" + str(date_string.split('/')[1]) + "_" + str(
+        date_string.split('/')[2])
+    create_and_print_pdf_document(doc_content, deleted_line.strip().split(',')[2], bookingDateForPrint,
+                                  deleted_line.strip().split(',')[3], 1)
+
+    messagebox.showinfo("Success!", "{} booking deleted and PDF generated!".format(str(entry)))
     calendarViewFrame = tk.Frame(userFrame, borderwidth=5, bg="lightblue")
     calendarViewFrame.grid(row=2, column=1, columnspan=5)
     viewCalendar = CalendarView(calendarViewFrame, {name.get()})
@@ -301,7 +328,7 @@ def cancelFrameWorkByPartyName():
     # Cancel Appointment by Party Name frame/window starts
     tk.Label(cancelAppointmentFrameByPartyName, text="By Party Name:", font=("Courier", 18), bg='lightblue').grid(row=3, column=3)
 
-    values = readAppointmentsForPartyName()
+    values = sorted(readAppointmentsForPartyName(), key=str.lower)
 
     cancelFrame = tk.Frame(cancelAppointmentFrameByPartyName, borderwidth=5, bg="lightblue")
     cancelFrame.grid(row=4, column=3)
@@ -319,19 +346,26 @@ def cancelFrameWorkByPartyName():
     # Cancel Appointment by Party Name frame/window ends
 
 
+# define a key function to extract the date from a string
+def get_date(string):
+    date_str = string.split('|')[0]
+    return datetime.strptime(date_str, '%d/%m/%Y')
+
+
 def cancelFrameWorkByDate():
     # Cancel Appointment by Date frame/window starts
     tk.Label(cancelAppointmentFrameByDate, text="By Date:", font=("Courier", 18), bg='lightblue').grid(row=3, column=3)
 
     values = readAppointmentsForBookingPeriod()
+    sorted_dates = sorted(values, key=get_date)
 
     cancelFrameByDate = tk.Frame(cancelAppointmentFrameByDate, borderwidth=5, bg="lightblue")
     cancelFrameByDate.grid(row=4, column=3)
 
     optionmenu_var = tk.StringVar(cancelAppointmentFrameByDate)
-    optionmenu_var.set(values[0])
+    optionmenu_var.set(sorted_dates[0])
 
-    optionmenu = tk.OptionMenu(cancelFrameByDate, optionmenu_var, *values)
+    optionmenu = tk.OptionMenu(cancelFrameByDate, optionmenu_var, *sorted_dates)
     optionmenu.grid(row=4, column=3, columnspan=75)
 
     # Cancel Appointment by Date screen buttons
@@ -415,7 +449,7 @@ def viewBookings():
     viewOptionFrame1 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1, relief=tk.SOLID)
     viewOptionFrame1.grid(row=2, column=2)
     view_optionmenu_var.set("")
-    sorted_keys_party_name = sorted(viewpartyNameHashMap.keys())
+    sorted_keys_party_name = sorted(viewpartyNameHashMap.keys(), key=str.lower)
     optionmenu1 = tk.OptionMenu(viewOptionFrame1, view_optionmenu_var, *sorted_keys_party_name, command=view_update_values_with_data)
     optionmenu1.grid(row=2, column=2, columnspan=45)
 
@@ -425,7 +459,7 @@ def viewBookings():
     viewOptionFrame2 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1, relief=tk.SOLID)
     viewOptionFrame2.grid(row=2, column=18)
     viewbydate_optionmenu_var.set("")
-    sorted_keys_event_date = sorted(vieweventDateHashMap.keys())
+    sorted_keys_event_date = sorted(vieweventDateHashMap.keys(), key=get_date)
     optionmenu2 = tk.OptionMenu(viewOptionFrame2, viewbydate_optionmenu_var, *sorted_keys_event_date,
                                command=viewByDate_update_values_with_data)
     optionmenu2.grid(row=2, column=18, columnspan=45)

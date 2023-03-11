@@ -159,8 +159,8 @@ class Calendar:
                     self.wid.append(b)
                     b.grid(row=w, column=d)
 
-        sel = tk.Label(self.parent, height=2, bg=self.COLOR_OF_SELECTED_EVENT_DATE, text='Selected Event date => {} {} {} {}'.format(
-            self.day_name, calendar.month_name[self.month_selected], self.day_selected, self.year_selected), font=bold_font)
+        sel = tk.Label(self.parent, height=2, bg=self.COLOR_OF_SELECTED_EVENT_DATE, text='Selected Event date => {} {} {}'.format(
+            calendar.month_name[self.month_selected], self.day_selected, self.year_selected), font=bold_font)
         self.wid.append(sel)
         sel.grid(row=8, column=0, columnspan=7)
 
