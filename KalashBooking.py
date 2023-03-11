@@ -1,3 +1,4 @@
+import calendar
 import csv
 import os.path
 import tkinter as tk
@@ -88,6 +89,13 @@ def moveToCancelByDate():
     raiseFrame(cancelAppointmentFrameByDate)
 
 
+def moveToStatement():
+    for widget in statementAppointmentFrame.winfo_children():
+        widget.destroy()
+    showStatement()
+    raiseFrame(statementAppointmentFrame)
+
+
 def moveToView():
     for widget in viewAppointmentFrame.winfo_children():
         widget.destroy()
@@ -169,8 +177,75 @@ def createUserFrame():
               command=moveToView).grid(row=4, column=2)
     tk.Button(userFrame, font=("Courier", 18), bg='cyan', padx=15, pady=8, text="Cancel (By date)",
               command=moveToCancelByDate).grid(row=4, column=3)
+    tk.Button(userFrame, font=("Courier", 18), bg='cyan', padx=15, pady=8, text="Statement",
+              command=moveToStatement).grid(row=4, column=4)
     tk.Button(userFrame, font=("Courier", 18), bg='cyan', padx=15, pady=8, text="Log Out", command=logOut).grid(row=4,
-                                                                                                                column=4)
+                                                                                                                column=5)
+
+
+def generateStatement(date_to_check):
+    month = int(date_to_check.split('/')[0])
+    year = int(date_to_check.split('/')[1])
+    bookingCount = 0
+    totalBookingAmount = 0
+    totalFullDayBookings = 0
+    totalEveningBookings = 0
+    totalMorningBookings = 0
+
+    with open("appointments.txt", 'r') as f:
+        lines = f.readlines()
+        f.close()
+
+    for line in lines:
+        monthCheck = int(line.strip().split(',')[1].split('/')[1])
+        yearCheck = int(line.strip().split(',')[1].split('/')[2])
+        if len(line) > 4 and monthCheck == month and yearCheck == year:
+            bookingCount += 1
+            if line.strip().split(',')[3] == "Morning":
+                totalMorningBookings += 1
+            elif line.strip().split(',')[3] == "Evening":
+                totalEveningBookings += 1
+            else:
+                totalFullDayBookings += 1
+            totalBookingAmount = totalBookingAmount + int(line.strip().split(',')[4])
+
+    string_to_display_1 = "There were {} booking(s) in the month of {} {}".format(str(bookingCount), calendar.month_name[month], year)
+    string_to_display_2 = "The total booking amount for all these bookings came to {} Rs.".format(
+        str(totalBookingAmount))
+    string_to_display_3 = "Off these {} booking(s), {} were Morning ones, {} were Evening ones and {} were Full Day.".format(
+        str(bookingCount), str(totalMorningBookings), str(totalEveningBookings), str(totalFullDayBookings))
+    string_to_display = string_to_display_1 + "\n" + string_to_display_2 + "\n" + string_to_display_3
+    print(str(bookingCount) + " :: " + str(totalBookingAmount) + " :: " + str(totalMorningBookings) + " :: " + str(
+        totalEveningBookings) + " :: " + str(totalFullDayBookings))
+    tk.Label(statementAppointmentFrame, text="Details for {} {}:".format(calendar.month_name[month], year), font=("Courier", 22), bg='lightblue').grid(
+        row=7, column=3, columnspan=15)
+
+    tk.Label(statementAppointmentFrame, text=string_to_display, font=("Courier", 14), bg='lightblue').grid(
+        row=9, column=3, columnspan=15)
+
+    tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=11, column=3)
+
+
+def showStatement():
+    tk.Label(statementAppointmentFrame, text="Select Month", font=("Courier", 14), bg='lightblue').grid(
+        row=2, column=4)
+    # create list of month numbers
+    months = list(range(1, 13))
+
+    selected_month = tk.StringVar()
+    optionmenu_month = tk.OptionMenu(statementAppointmentFrame, selected_month, months[0], *months)
+    optionmenu_month.grid(row=3, column=4, columnspan=5)
+
+    tk.Label(statementAppointmentFrame, text="Select Year", font=("Courier", 14), bg='lightblue').grid(
+        row=2, column=6)
+    current_year = datetime.now().year
+    # create list of years (current, previous, and next)
+    years = [current_year - 1, current_year, current_year + 1]
+    selected_year = tk.StringVar()
+    optionmenu = tk.OptionMenu(statementAppointmentFrame, selected_year, *years)
+    optionmenu.grid(row=3, column=6, columnspan=5)
+
+    tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Generate", command=lambda: generateStatement(selected_month.get() + "/" + selected_year.get())).grid(row=5, column=4)
 
 
 def validate_input(new_text):
@@ -310,7 +385,7 @@ def cancelAppointmentByName(optionmenu_var):
     messagebox.showinfo("Success!", "{} booking deleted and PDF generated!".format(str(entry)))
     calendarViewFrame = tk.Frame(userFrame, borderwidth=5, bg="lightblue")
     calendarViewFrame.grid(row=2, column=1, columnspan=5)
-    viewCalendar = CalendarView(calendarViewFrame, {name.get()})
+    CalendarView(calendarViewFrame, {name.get()})
     moveToUser()
 
 
@@ -342,7 +417,7 @@ def cancel_appointment_by_date(optionmenu_var):
     messagebox.showinfo("Success!", "{} booking deleted and PDF generated!".format(str(entry)))
     calendarViewFrame = tk.Frame(userFrame, borderwidth=5, bg="lightblue")
     calendarViewFrame.grid(row=2, column=1, columnspan=5)
-    viewCalendar = CalendarView(calendarViewFrame, {name.get()})
+    CalendarView(calendarViewFrame, {name.get()})
     moveToUser()
 
 
@@ -779,6 +854,7 @@ userFrame = tk.Frame(root)
 bookAppointmentFrame = tk.Frame(root)
 cancelAppointmentFrameByPartyName = tk.Frame(root)
 cancelAppointmentFrameByDate = tk.Frame(root)
+statementAppointmentFrame = tk.Frame(root)
 viewAppointmentFrame = tk.Frame(root)
 viewByDateAppointmentFrame = tk.Frame(root)
 updateAppointmentFrame = tk.Frame(root)
@@ -861,7 +937,7 @@ vieweventDateHashMap = {}
 
 frameList = [start, regFrame, userFrame, bookAppointmentFrame, cancelAppointmentFrameByPartyName,
              cancelAppointmentFrameByDate, viewAppointmentFrame, viewByDateAppointmentFrame, updateAppointmentFrame,
-             printAppointmentFrame]
+             statementAppointmentFrame, printAppointmentFrame]
 # Configure all (main) Frames
 for frame in frameList:
     frame.grid(row=0, column=0, sticky='news')
