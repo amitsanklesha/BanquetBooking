@@ -25,6 +25,7 @@ class Calendar:
         self.COLOR_OF_EVENING_DAY_BUTTONS = "green"
         self.COLOR_OF_2BOOKINGS_DAY_BUTTONS = "blue"
         self.COLOR_OF_SELECTED_EVENT_DATE = "orange"
+        self.COLOR_OF_SELECTED_EVENT_DATE_FG = "white"
 
         self.setup(self.year, self.month)
 
@@ -130,17 +131,20 @@ class Calendar:
                             shouldBeDisabled = 1
 
                         if indextocheck != actuallastindex:
-                            allgood = 0
+                            allgood = 0 # Implies both Morning and Evening booked for same day
                     else:
                         color = self.COLOR_OF_DAY_BUTTONS
 
-                    if allgood == 0:
+                    if allgood == 0:  # Both Morning and Evening booked separately for same day
                         b = tk.Button(self.parent, width=1, text=day, state=tk.DISABLED,
                                       bg=self.COLOR_OF_2BOOKINGS_DAY_BUTTONS, fg="black",
                                       command=lambda day=day: self.selection(day, calendar.day_name[day % 7]))
                     else:
-                        if shouldBeDisabled == 1:
+                        if shouldBeDisabled == 1:  # Full Day booking
                             b = tk.Button(self.parent, text=day, state=tk.DISABLED, bg=color,
+                                          command=lambda day=day: self.selection(day, calendar.day_name[day % 7]))
+                        elif day == self.day_selected:
+                            b = tk.Button(self.parent, text=day, bg=self.COLOR_OF_SELECTED_EVENT_DATE_FG, font=bold_font,
                                           command=lambda day=day: self.selection(day, calendar.day_name[day % 7]))
                         else:
                             b = tk.Button(self.parent, text=day, bg=color,
@@ -174,6 +178,6 @@ class BlinkingLabel(tk.Label):
 
     def blink(self):
         self._blink = not self._blink
-        color = self._blink_color if self._blink else self.master['bg']
+        color = self._blink_color if self._blink else "white"
         self.config(foreground=color)
         self.after(500, self.blink)

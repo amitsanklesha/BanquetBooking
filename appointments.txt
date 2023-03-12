@@ -1,10 +1,6 @@
-Amit,23/2/2023,Chaprasi bro,Evening,342321,332,1/3/2023
 Amit,24/2/2023,Chaprasi brothers,Morning,342321,332,1/3/2023
 Amit,24/3/2023,Chaprasi brothers Mar2,Morning,342321,332,2/3/2023
 Amit Sanklesha,24/3/2023,EveningCheck1,Evening,55644,34542,05/03/2023
-Amit Sanklesha,27/3/2023,SanjayVeera,Evening,45343,3432,11/03/2023
-Rivaan Sanklesha,14/1/2024,RivaanBday,Full Day,90000,1,11/03/2023
-Amit Sanklesha,20/3/2023,fafsdfs,Morning,34342,2323,11/03/2023
-Rivaan Sanklesha,22/3/2023,hygjgy,Full Day,90000,1,11/03/2023
-Amit Sanklesha,21/3/2023,RetestSameBooking,Morning,34232,3432,11/03/2023
 Amit Sanklesha,21/3/2023,AshokSankleshaParty,Evening,34342,3423,11/03/2023
+Rivaan Sanklesha,23/3/2023,Rivaan Sanklesha Bday,Evening,45000,10000,12/03/2023
+ankit sanklesha,27/3/2023,SanjayVeera,Morning,45000,5000,12/03/2023

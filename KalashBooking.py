@@ -184,6 +184,9 @@ def createUserFrame():
 
 
 def generateStatement(date_to_check):
+    if date_to_check == "" or date_to_check.strip() == "" or date_to_check == "/" or len(date_to_check) < 6:
+        return
+
     month = int(date_to_check.split('/')[0])
     year = int(date_to_check.split('/')[1])
     bookingCount = 0
@@ -197,19 +200,22 @@ def generateStatement(date_to_check):
         f.close()
 
     for line in lines:
-        monthCheck = int(line.strip().split(',')[1].split('/')[1])
-        yearCheck = int(line.strip().split(',')[1].split('/')[2])
-        if len(line) > 4 and monthCheck == month and yearCheck == year:
-            bookingCount += 1
-            if line.strip().split(',')[3] == "Morning":
-                totalMorningBookings += 1
-            elif line.strip().split(',')[3] == "Evening":
-                totalEveningBookings += 1
-            else:
-                totalFullDayBookings += 1
-            totalBookingAmount = totalBookingAmount + int(line.strip().split(',')[4])
+        if len(line) > 4:
+            monthCheck = int(line.strip().split(',')[1].split('/')[1])
+            yearCheck = int(line.strip().split(',')[1].split('/')[2])
+            if monthCheck == month and yearCheck == year:
+                bookingCount += 1
+                if line.strip().split(',')[3] == "Morning":
+                    totalMorningBookings += 1
+                elif line.strip().split(',')[3] == "Evening":
+                    totalEveningBookings += 1
+                else:
+                    totalFullDayBookings += 1
+                totalBookingAmount = totalBookingAmount + int(line.strip().split(',')[4])
 
-    string_to_display_1 = "There were {} booking(s) in the month of {} {}".format(str(bookingCount), calendar.month_name[month], year)
+    main_text = "Details for {} {}:".format(calendar.month_name[month], year)
+    string_to_display_1 = "There were {} booking(s) in the month of {} {}".format(str(bookingCount),
+                                                                                  calendar.month_name[month], year)
     string_to_display_2 = "The total booking amount for all these bookings came to {} Rs.".format(
         str(totalBookingAmount))
     string_to_display_3 = "Off these {} booking(s), {} were Morning ones, {} were Evening ones and {} were Full Day.".format(
@@ -217,13 +223,14 @@ def generateStatement(date_to_check):
     string_to_display = string_to_display_1 + "\n" + string_to_display_2 + "\n" + string_to_display_3
     print(str(bookingCount) + " :: " + str(totalBookingAmount) + " :: " + str(totalMorningBookings) + " :: " + str(
         totalEveningBookings) + " :: " + str(totalFullDayBookings))
-    tk.Label(statementAppointmentFrame, text="Details for {} {}:".format(calendar.month_name[month], year), font=("Courier", 22), bg='lightblue').grid(
+    tk.Label(statementAppointmentFrame, text=main_text, font=("Courier", 22), bg='lightblue').grid(
         row=7, column=3, columnspan=15)
 
     tk.Label(statementAppointmentFrame, text=string_to_display, font=("Courier", 14), bg='lightblue').grid(
         row=9, column=3, columnspan=15)
 
-    tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=11, column=3)
+    tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=11,
+                                                                                                                column=3)
 
 
 def showStatement():
@@ -245,7 +252,8 @@ def showStatement():
     optionmenu = tk.OptionMenu(statementAppointmentFrame, selected_year, *years)
     optionmenu.grid(row=3, column=6, columnspan=5)
 
-    tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Generate", command=lambda: generateStatement(selected_month.get() + "/" + selected_year.get())).grid(row=5, column=4)
+    tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Generate",
+              command=lambda: generateStatement(selected_month.get() + "/" + selected_year.get())).grid(row=5, column=4)
 
 
 def validate_input(new_text):
@@ -263,10 +271,11 @@ def bookAppointmentCall():
                                                                                                           column=1)
     tk.Label(bookAppointmentFrame, text="Select Booking period: ", font=("Courier", 18), bg='lightblue').grid(row=4,
                                                                                                               column=1)
-    tk.Label(bookAppointmentFrame, text="Agreed Final Price", font=("Courier", 18), bg='lightblue').grid(row=5,
-                                                                                                         column=1)
-    tk.Label(bookAppointmentFrame, text="Booking Amount", font=("Courier", 18), bg='lightblue').grid(row=6, column=1)
-    tk.Label(bookAppointmentFrame, text="Booking Date (defaulted to today)", font=("Courier", 18), bg='lightblue').grid(
+    tk.Label(bookAppointmentFrame, text="Agreed Final Price:", font=("Courier", 18), bg='lightblue').grid(row=5,
+                                                                                                          column=1)
+    tk.Label(bookAppointmentFrame, text="Amount Paid:", font=("Courier", 18), bg='lightblue').grid(row=6, column=1)
+    tk.Label(bookAppointmentFrame, text="Booking Date (defaulted to today):", font=("Courier", 18),
+             bg='lightblue').grid(
         row=7, column=1)
 
     # Book Appointment frame/window starts
@@ -286,7 +295,7 @@ def bookAppointmentCall():
     bookingPeriodFrame = tk.Frame(bookAppointmentFrame, borderwidth=5, bg="lightblue")
     bookingPeriodFrame.grid(row=4, column=2)
     bookingPeriodComboBox = Combobox(bookingPeriodFrame, background="lightblue",
-                                     values=("Morning", "Evening", "Full Day"))
+                                     values=("Morning", "Evening", "Full Day"), state="readonly")
     bookingPeriodComboBox.grid(row=4, column=2)
 
     # Agreed Final Price
@@ -305,6 +314,10 @@ def bookAppointmentCall():
     date_var = tk.StringVar()
     date_var.set(date.today().strftime("%d/%m/%Y"))
     date_entry_when_booked = DateEntry(bookAppointmentFrame, width=12, textvariable=date_var, date_pattern="dd/mm/yyyy")
+
+    # bind keyboard events to the widget
+    date_entry_when_booked.bind("<Key>", disable_keyboard)
+    date_entry_when_booked.bind("<FocusIn>", disable_keyboard)
     date_entry_when_booked.grid(row=7, column=2)
 
     # Book Appointment screen buttons
@@ -323,6 +336,10 @@ def makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPer
         messagebox.showerror("Error", "One of more fields is missing. Please input all data to proceed")
         return
 
+    if int(bookingAmount.get()) > int(agreedFinalPrice.get()):
+        messagebox.showerror("Error", "Amount Paid cannot be more than the agreed final price")
+        return
+
     with open("appointments.txt", 'r') as f:
         lines = f.readlines()
         f.close()
@@ -332,10 +349,13 @@ def makeAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPer
         datePickercalendar.year_selected)
 
     for line in lines:
-        if len(line) > 4 and line.strip().split(',')[1] == bookingDate and line.strip().split(',')[3] == bookingPeriodComboBox.get():
-            messagebox.showerror("Error", "One {} {} booking is already present, you cannot rebook.".format(bookingDate,
-                                                                                                            bookingPeriodComboBox.get()))
-            return
+        if len(line) > 4:
+            if line.strip().split(',')[1] == bookingDate and (line.strip().split(',')[3] == bookingPeriodComboBox.get() or line.strip().split(',')[3] == "Full Day" or bookingPeriodComboBox.get() == "Full Day"):
+                messagebox.showerror("Error", "One {} {} booking is already present, you cannot rebook.".format(bookingDate, line.strip().split(',')[3]))
+                return
+            elif str(line.strip().split(',')[2]).strip().lower() == str(partyName.get()).strip().lower():
+                messagebox.showerror("Error", "Party Name should be unique")
+                return
 
     msg_booking = "{} {} for {}\nat final price {};\noff which payment of {} is done. Ok to proceed?".format(
         bookingDate, bookingPeriodComboBox.get(), partyName.get(), agreedFinalPrice.get(), bookingAmount.get())
@@ -612,6 +632,10 @@ def viewBookings():
     # View Appointment frame/window ends
 
 
+def disable_keyboard(event):
+    return 'break'
+
+
 def updateButtonClick():
     tk.Label(updateAppointmentFrame, text="Update an Appointment", font=("Courier", 44), bg='lightblue').grid(row=1,
                                                                                                               column=1,
@@ -625,7 +649,7 @@ def updateButtonClick():
                                                                                                                 column=1)
     tk.Label(updateAppointmentFrame, text="Agreed Final Price:", font=("Courier", 18), bg='lightblue').grid(row=6,
                                                                                                             column=1)
-    tk.Label(updateAppointmentFrame, text="Booking Amount:", font=("Courier", 18), bg='lightblue').grid(row=7, column=1)
+    tk.Label(updateAppointmentFrame, text="Amount Paid:", font=("Courier", 18), bg='lightblue').grid(row=7, column=1)
     tk.Label(updateAppointmentFrame, text="Re-Booking Date (defaulted to today):", font=("Courier", 18),
              bg='lightblue').grid(
         row=8, column=1)
@@ -670,12 +694,13 @@ def updateButtonClick():
     # Booking Period
     updatebookingPeriodComboBox = Combobox(updateAppointmentFrame, background="lightblue",
                                            values=("Morning", "Evening", "Full Day"),
-                                           textvariable=booked_period_entry_var)
+                                           textvariable=booked_period_entry_var, state="readonly")
     updatebookingPeriodComboBox.grid(row=5, column=2)
 
     # Option menu for Party Name
+    values = sorted(updatePartyNameArray, key=str.lower)
     update_optionmenu_var.set("")
-    optionmenu = tk.OptionMenu(updateAppointmentFrame, update_optionmenu_var, *updatePartyNameArray,
+    optionmenu = tk.OptionMenu(updateAppointmentFrame, update_optionmenu_var, *values,
                                command=update_values_with_data)
     optionmenu.grid(row=2, column=2, columnspan=45)
 
@@ -696,6 +721,10 @@ def updateButtonClick():
     update_date_var.set(date.today().strftime("%d/%m/%Y"))
     update_date_entry_when_booked = DateEntry(updateAppointmentFrame, width=12, textvariable=booking_date_entry_var,
                                               date_pattern="dd/mm/yyyy")
+    # bind keyboard events to the widget
+    update_date_entry_when_booked.bind("<Key>", disable_keyboard)
+    update_date_entry_when_booked.bind("<FocusIn>", disable_keyboard)
+
     update_date_entry_when_booked.grid(row=8, column=2)
 
     # Update Appointment screen buttons
@@ -737,38 +766,66 @@ def gobackfromview():
 
 def updateAppointment(calendarViewFrame, datePickercalendar, partyName, bookingPeriodComboBox, agreedFinalPrice,
                       bookingAmount, date_entry_when_booked, checkbox_state):
+    if partyName.get() == '' or partyName.get().strip() == '' or agreedFinalPrice.get() == '' or agreedFinalPrice.get().strip() == '' or bookingAmount.get() == '' or bookingAmount.get().strip() == '':
+        messagebox.showerror("Error", "One of more fields is missing. Please input all data to proceed")
+        return
+
+    if int(bookingAmount.get()) > int(agreedFinalPrice.get()):
+        messagebox.showerror("Error", "Amount Paid cannot be more than the agreed final price")
+        return
+
     # Format date
     if checkbox_state.get():
         bookingDate = str(datePickercalendar.day_selected) + "/" + str(datePickercalendar.month_selected) + "/" + str(
             datePickercalendar.year_selected)
         bookingPeriod = bookingPeriodComboBox.get()
+        if bookingPeriod == '':
+            messagebox.showerror("Error", "One of more fields is missing. Please input all data to proceed")
+            return
 
     with open("appointments.txt", 'r') as f:
         lines = f.readlines()
-        if not checkbox_state.get():
-            for line in lines:
-                if len(line) > 4 and line.strip().split(',')[2] == partyName.get():
-                    bookingDate = line.strip().split(',')[1]
-                    bookingPeriod = line.strip().split(',')[3]
-                    break
-
-    with open("appointments.txt", 'w') as f:
-        for line in lines:
-            if len(line) > 4 and line.strip().split(',')[2] != partyName.get():
-                f.write(line)
-        writer = csv.writer(f)
-        writeList = [name.get(), bookingDate, partyName.get(), bookingPeriod, agreedFinalPrice.get(),
-                     bookingAmount.get(), date_entry_when_booked.get()]
-        writer.writerow(writeList)
         f.close()
+    if not checkbox_state.get():
+        for line in lines:
+            if len(line) > 4 and line.strip().split(',')[2] == partyName.get():
+                bookingDate = line.strip().split(',')[1]
+                bookingPeriod = line.strip().split(',')[3]
+                break
 
-    messagebox.showinfo("Success!", "{} booking updated!".format(partyName.get()))
-    booking_amount_entry_var.set("")
-    event_date_entry_var.set("")
-    booked_period_entry_var.set("")
-    booking_date_entry_var.set("")
-    final_price_entry_var.set("")
-    moveToUser()
+    for line in lines:
+        if len(line) > 4 and line.strip().split(',')[1] == bookingDate and (
+                line.strip().split(',')[2] != partyName.get() and
+                (line.strip().split(',')[3] == bookingPeriod or line.strip().split(',')[
+                    3] == "Full Day" or bookingPeriod == "Full Day")):
+            messagebox.showerror("Error",
+                                 "One {} {} booking is already present, you cannot rebook.".format(bookingDate,
+                                                                                                   line.strip().split(
+                                                                                                       ',')[3]))
+            return
+
+    msg_booking = "{} {} for {}\nat final price {};\noff which payment of {} is done. Ok to proceed?".format(
+        bookingDate, bookingPeriod, partyName.get(), agreedFinalPrice.get(), bookingAmount.get())
+    response = messagebox.askyesno("Confirmation", "Are you sure to update booking with following final values:\n" + msg_booking)
+
+    if response == 1:
+        with open("appointments.txt", 'w') as f:
+            for line in lines:
+                if len(line) > 4 and line.strip().split(',')[2] != partyName.get():
+                    f.write(line)
+            writer = csv.writer(f)
+            writeList = [name.get(), bookingDate, partyName.get(), bookingPeriod, agreedFinalPrice.get(),
+                         bookingAmount.get(), date_entry_when_booked.get()]
+            writer.writerow(writeList)
+            f.close()
+
+        messagebox.showinfo("Success!", "{} booking updated!".format(partyName.get()))
+        booking_amount_entry_var.set("")
+        event_date_entry_var.set("")
+        booked_period_entry_var.set("")
+        booking_date_entry_var.set("")
+        final_price_entry_var.set("")
+        moveToUser()
 
 
 def login():
