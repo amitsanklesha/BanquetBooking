@@ -112,6 +112,20 @@ def moveToUser():
 
 
 def register():
+    if name.get() == "" or name.get().strip() == "" or username.get() == "" or username.get().strip() == "" or password.get() == "" or password.get().strip() == "":
+        messagebox.showerror("Registration Error", "All of name, username and password fields are mandatory")
+        return
+
+    with open("users.txt", 'r') as f:
+        lines = f.readlines()
+        f.close()
+
+    for line in lines:
+        if len(line) > 4:
+            if line.split(',')[0].strip().lower() == name.get().lower() or line.split(',')[1].strip().lower() == username.get().lower():
+                messagebox.showerror("Registration Error", "Name and Username must be unique. Please choose a different one.")
+                return
+
     with open("users.txt", 'a', newline="") as userFile:
         writer = csv.writer(userFile)
         writeList = [name.get(), username.get(), password.get()]
@@ -213,7 +227,6 @@ def generateStatement(date_to_check):
                     totalFullDayBookings += 1
                 totalBookingAmount = totalBookingAmount + int(line.strip().split(',')[4])
 
-    main_text = "Details for {} {}:".format(calendar.month_name[month], year)
     string_to_display_1 = "There were {} booking(s) in the month of {} {}".format(str(bookingCount),
                                                                                   calendar.month_name[month], year)
     string_to_display_2 = "The total booking amount for all these bookings came to {} Rs.".format(
@@ -223,37 +236,34 @@ def generateStatement(date_to_check):
     string_to_display = string_to_display_1 + "\n" + string_to_display_2 + "\n" + string_to_display_3
     print(str(bookingCount) + " :: " + str(totalBookingAmount) + " :: " + str(totalMorningBookings) + " :: " + str(
         totalEveningBookings) + " :: " + str(totalFullDayBookings))
-    tk.Label(statementAppointmentFrame, text=main_text, font=("Courier", 22), bg='lightblue').grid(
-        row=7, column=3, columnspan=15)
 
     tk.Label(statementAppointmentFrame, text=string_to_display, font=("Courier", 14), bg='lightblue').grid(
-        row=9, column=3, columnspan=15)
-
-    tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=11,
-                                                                                                                column=3)
+        row=12, column=3, columnspan=15)
 
 
 def showStatement():
     tk.Label(statementAppointmentFrame, text="Select Month", font=("Courier", 14), bg='lightblue').grid(
-        row=2, column=4)
+        row=2, column=4, columnspan=5)
     # create list of month numbers
     months = list(range(1, 13))
 
     selected_month = tk.StringVar()
-    optionmenu_month = tk.OptionMenu(statementAppointmentFrame, selected_month, months[0], *months)
+    optionmenu_month = tk.OptionMenu(statementAppointmentFrame, selected_month, *months)
     optionmenu_month.grid(row=3, column=4, columnspan=5)
 
     tk.Label(statementAppointmentFrame, text="Select Year", font=("Courier", 14), bg='lightblue').grid(
-        row=2, column=6)
+        row=2, column=8, columnspan=5)
     current_year = datetime.now().year
     # create list of years (current, previous, and next)
     years = [current_year - 1, current_year, current_year + 1]
     selected_year = tk.StringVar()
     optionmenu = tk.OptionMenu(statementAppointmentFrame, selected_year, *years)
-    optionmenu.grid(row=3, column=6, columnspan=5)
+    optionmenu.grid(row=3, column=8, columnspan=5)
 
     tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Generate",
               command=lambda: generateStatement(selected_month.get() + "/" + selected_year.get())).grid(row=5, column=4)
+    tk.Button(statementAppointmentFrame, font=("Courier", 18), bg='cyan', text="Back", command=moveToUser).grid(row=5,
+                                                                                                                column=8)
 
 
 def validate_input(new_text):
@@ -528,7 +538,7 @@ def viewByDate_update_values_with_data(*args):
 def viewBookings():
     tk.Label(viewAppointmentFrame, text="View Bookings", font=("Courier", 44), bg='lightblue').grid(row=1, column=1,
                                                                                                     columnspan=5)
-    tk.Label(viewAppointmentFrame, text="Select an option: ", font=("Courier", 16), bg='lightblue').grid(row=2,
+    tk.Label(viewAppointmentFrame, text="Select an option: ----> ", font=("Courier", 16), bg='lightblue').grid(row=2,
                                                                                                          column=1)
     tk.Label(viewAppointmentFrame, text="Party Name ", font=("Courier", 16), bg='lightblue').grid(row=3, column=1)
     tk.Label(viewAppointmentFrame, text="Booked Event Date ", font=("Courier", 16), bg='lightblue').grid(row=4,
@@ -574,7 +584,7 @@ def viewBookings():
     viewOptionFrame1 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1,
                                 relief=tk.SOLID)
     viewOptionFrame1.grid(row=2, column=2)
-    view_optionmenu_var.set("")
+    view_optionmenu_var.set("Select Party Name")
     sorted_keys_party_name = sorted(viewpartyNameHashMap.keys(), key=str.lower)
     optionmenu1 = tk.OptionMenu(viewOptionFrame1, view_optionmenu_var, *sorted_keys_party_name,
                                 command=view_update_values_with_data)
@@ -586,7 +596,7 @@ def viewBookings():
     viewOptionFrame2 = tk.Frame(viewAppointmentFrame, borderwidth=5, bg="lightblue", width=200, height=40, bd=1,
                                 relief=tk.SOLID)
     viewOptionFrame2.grid(row=2, column=18)
-    viewbydate_optionmenu_var.set("")
+    viewbydate_optionmenu_var.set("Select Booking Date")
     sorted_keys_event_date = sorted(vieweventDateHashMap.keys(), key=get_date)
     optionmenu2 = tk.OptionMenu(viewOptionFrame2, viewbydate_optionmenu_var, *sorted_keys_event_date,
                                 command=viewByDate_update_values_with_data)
